@@ -1,6 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Sample App</string>
-    <string name="welcome_message">Welcome to Sample App!</string>
-    <string name="click_me">Click Me!</string>
-    <string name="initial_count">Button clicked 0 times</string>
+    <string name="app_name">PlanWise</string>
+    <string name="tagline">Plan Smarter, Achieve More</string>
+    
+    <!-- Dashboard -->
+    <string name="dashboard_title">Your Plans</string>
+    <string name="today_title">Today\'s Tasks</string>
+    <string name="progress_title">Progress</string>
+    <string name="new_plan">New Plan</string>
+    
+    <!-- Plan Generation -->
+    <string name="create_plan_title">Create Your Plan</string>
+    <string name="goal_hint">What\'s your goal? (e.g., Complete Physics syllabus)</string>
+    <string name="deadline_hint">How many days do you have?</string>
+    <string name="hours_hint">How many hours can you study/work daily?</string>
+    <string name="generate_plan">Generate Plan</string>
+    <string name="review_plan">Review My Plan</string>
+    
+    <!-- Plan Review -->
+    <string name="review_title">Plan Review</string>
+    <string name="reality_check">Reality Check</string>
+    <string name="suggestions">Suggestions</string>
+    <string name="accept_plan">Accept Plan</string>
+    <string name="edit_plan">Edit Plan</string>
+    
+    <!-- Loading & Errors -->
+    <string name="loading">Loading...</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_api">Unable to generate plan. Please try again.</string>
+    <string name="retry">Retry</string>
 </resources>

@@ -1,9 +1,32 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SampleApp" parent="Theme.Material3.DayNight">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.PlanWise" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">#2D9CDB</item>
+        <item name="colorPrimaryVariant">#1A7AB5</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">#0D9488</item>
+        <item name="colorSecondaryVariant">#0A7A70</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        
+        <!-- Background -->
+        <item name="android:colorBackground">#F3F4F6</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#1F2937</item>
+        
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/primary_blue</item>
+        
+        <!-- Font -->
+        <item name="android:fontFamily">@font/inter</item>
     </style>
-
-    <style name="Theme.SampleApp" parent="Base.Theme.SampleApp" />
+    
+    <!-- Splash screen theme -->
+    <style name="Theme.PlanWise.Splash" parent="Theme.PlanWise">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/primary_blue</item>
+    </style>
 </resources>
