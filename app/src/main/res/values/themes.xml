@@ -2,33 +2,24 @@
 <resources>
     <!-- Base application theme -->
     <style name="Theme.PlanWise" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Primary brand color -->
         <item name="colorPrimary">#2D9CDB</item>
         <item name="colorPrimaryVariant">#1A7AB5</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        
-        <!-- Secondary brand color -->
         <item name="colorSecondary">#0D9488</item>
         <item name="colorSecondaryVariant">#0A7A70</item>
         <item name="colorOnSecondary">#FFFFFF</item>
-        
-        <!-- Background -->
         <item name="android:colorBackground">#F3F4F6</item>
         <item name="colorSurface">#FFFFFF</item>
         <item name="colorOnSurface">#1F2937</item>
-        
-        <!-- Status bar color -->
         <item name="android:statusBarColor">@color/primary_blue</item>
-        
-        <!-- Font -->
         <item name="android:fontFamily">@font/inter_regular</item>
     </style>
     
     <!-- Splash screen theme for Android 12+ -->
     <style name="Theme.PlanWise.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/splash_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
-        <item name="windowSplashScreenIconBackgroundColor">@color/splash_background</item>
+        <item name="windowSplashScreenBackground">@color/primary_blue</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/primary_blue</item>
         <item name="postSplashScreenTheme">@style/Theme.PlanWise</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>

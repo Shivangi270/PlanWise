@@ -1,6 +1,8 @@
 package com.planwise.app
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -23,8 +25,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var loadingText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Install splash screen before super.onCreate()
-        installSplashScreen()
+        // Install splash screen
+        val splashScreen = installSplashScreen()
+        
+        // Keep splash screen visible for 1.5 seconds
+        var isReady = false
+        splashScreen.setKeepOnScreenCondition {
+            !isReady
+        }
+        
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -36,6 +45,11 @@ class MainActivity : AppCompatActivity() {
         resultText = findViewById(R.id.result_text)
         reviewButton = findViewById(R.id.review_button)
         loadingText = findViewById(R.id.loading_text)
+
+        // Delay to show splash screen
+        Handler(Looper.getMainLooper()).postDelayed({
+            isReady = true
+        }, 1500)
 
         generateButton.setOnClickListener {
             generatePlan()
@@ -62,7 +76,6 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // TODO: Replace with actual API call to your backend
                 val plan = generateFakePlan(goal, deadline, hours)
                 withContext(Dispatchers.Main) {
                     resultText.text = plan
@@ -84,7 +97,6 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Plan review coming soon! 🚀", Toast.LENGTH_SHORT).show()
     }
 
-    // Temporary placeholder until backend is ready
     private fun generateFakePlan(goal: String, deadline: String, hours: String): String {
         return """
             📋 YOUR PLAN: $goal

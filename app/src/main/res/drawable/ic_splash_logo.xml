@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+    <!-- Background circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,20 A80,80 0 1,1 20,100 A80,80 0 1,1 100,20" />
+    
+    <!-- Checkmark icon -->
+    <path
+        android:fillColor="#2D9CDB"
+        android:pathData="M80,100 L95,115 L140,70 L145,75 L95,125 L75,105 Z" />
+    
+    <!-- Small sparkle -->
+    <path
+        android:fillColor="#2D9CDB"
+        android:pathData="M60,60 L62,55 L64,60 L69,62 L64,64 L62,69 L60,64 L55,62 Z" />
+    
+    <path
+        android:fillColor="#2D9CDB"
+        android:pathData="M140,60 L142,55 L144,60 L149,62 L144,64 L142,69 L140,64 L135,62 Z" />
+</vector>
