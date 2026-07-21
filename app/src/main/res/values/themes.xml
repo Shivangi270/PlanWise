@@ -22,12 +22,16 @@
         
         <!-- Font -->
         <item name="android:fontFamily">@font/inter_regular</item>
-        <item name="android:textStyle">normal</item>
     </style>
     
-    <!-- Splash screen theme -->
-    <style name="Theme.PlanWise.Splash" parent="Theme.PlanWise">
-        <item name="android:windowBackground">@drawable/splash_background</item>
+    <!-- Splash screen theme for Android 12+ -->
+    <style name="Theme.PlanWise.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.PlanWise</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:statusBarColor">@color/primary_blue</item>
     </style>
 </resources>

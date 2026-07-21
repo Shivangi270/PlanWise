@@ -6,6 +6,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var loadingText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Install splash screen before super.onCreate()
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -79,7 +82,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun reviewPlan() {
         Toast.makeText(this, "Plan review coming soon! 🚀", Toast.LENGTH_SHORT).show()
-        // TODO: Implement plan review with AI
     }
 
     // Temporary placeholder until backend is ready
