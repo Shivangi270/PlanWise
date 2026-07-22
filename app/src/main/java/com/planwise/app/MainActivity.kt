@@ -3,10 +3,7 @@ package com.planwise.app
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
@@ -14,8 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -26,13 +21,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var deadlineInput: EditText
     private lateinit var hoursInput: EditText
     private lateinit var topicsInput: EditText
-    private lateinit var roleSpinner: android.widget.Spinner
+    private lateinit var roleSpinner: Spinner
     private lateinit var generateButton: Button
     private lateinit var resultText: TextView
     private lateinit var reviewButton: Button
     private lateinit var loadingText: TextView
 
-    // 👇 UPDATED BACKEND URL - Your live Render URL
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,11 +35,11 @@ class MainActivity : AppCompatActivity() {
         splashScreen.setKeepOnScreenCondition {
             !isReady
         }
-        
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize all views
+        // Initialize views
         goalInput = findViewById(R.id.goal_input)
         deadlineInput = findViewById(R.id.deadline_input)
         hoursInput = findViewById(R.id.hours_input)
@@ -56,9 +50,9 @@ class MainActivity : AppCompatActivity() {
         reviewButton = findViewById(R.id.review_button)
         loadingText = findViewById(R.id.loading_text)
 
-        // Setup role spinner with options
+        // Setup role spinner
         val roles = arrayOf("Student", "Professional")
-        val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         roleSpinner.adapter = adapter
 
@@ -67,7 +61,6 @@ class MainActivity : AppCompatActivity() {
             isReady = true
         }, 1500)
 
-        // Button listeners
         generateButton.setOnClickListener {
             generatePlan()
         }
