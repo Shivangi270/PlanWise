@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -21,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var deadlineInput: EditText
     private lateinit var hoursInput: EditText
     private lateinit var topicsInput: EditText
-    private lateinit var roleSpinner: Spinner
+    private lateinit var roleInput: AutoCompleteTextView  // Changed from Spinner
     private lateinit var generateButton: Button
     private lateinit var resultText: TextView
     private lateinit var reviewButton: Button
@@ -44,17 +43,17 @@ class MainActivity : AppCompatActivity() {
         deadlineInput = findViewById(R.id.deadline_input)
         hoursInput = findViewById(R.id.hours_input)
         topicsInput = findViewById(R.id.topics_input)
-        roleSpinner = findViewById(R.id.role_spinner)
+        roleInput = findViewById(R.id.role_spinner)  // This is an AutoCompleteTextView
         generateButton = findViewById(R.id.generate_button)
         resultText = findViewById(R.id.result_text)
         reviewButton = findViewById(R.id.review_button)
         loadingText = findViewById(R.id.loading_text)
 
-        // Setup role spinner
+        // Setup role dropdown
         val roles = arrayOf("Student", "Professional")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        roleSpinner.adapter = adapter
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
+        roleInput.setAdapter(adapter)
+        roleInput.setText("Student", false)  // Default selection
 
         // Splash screen delay
         Handler(Looper.getMainLooper()).postDelayed({
@@ -75,7 +74,7 @@ class MainActivity : AppCompatActivity() {
         val deadline = deadlineInput.text.toString().trim()
         val hours = hoursInput.text.toString().trim()
         val topics = topicsInput.text.toString().trim()
-        val role = roleSpinner.selectedItem.toString().lowercase()
+        val role = roleInput.text.toString().lowercase()  // Get text from AutoCompleteTextView
 
         if (goal.isEmpty() || deadline.isEmpty() || hours.isEmpty()) {
             Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show()
