@@ -13,22 +13,30 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var goalInput: EditText
     private lateinit var deadlineInput: EditText
     private lateinit var hoursInput: EditText
+    private lateinit var topicsInput: EditText
+    private lateinit var roleSpinner: android.widget.Spinner
     private lateinit var generateButton: Button
     private lateinit var resultText: TextView
     private lateinit var reviewButton: Button
     private lateinit var loadingText: TextView
 
+    // 👇 UPDATED BACKEND URL - Your live Render URL
+    private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Install splash screen
         val splashScreen = installSplashScreen()
-        
-        // Keep splash screen visible for 1.5 seconds
         var isReady = false
         splashScreen.setKeepOnScreenCondition {
             !isReady
@@ -37,20 +45,29 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize views
+        // Initialize all views
         goalInput = findViewById(R.id.goal_input)
         deadlineInput = findViewById(R.id.deadline_input)
         hoursInput = findViewById(R.id.hours_input)
+        topicsInput = findViewById(R.id.topics_input)
+        roleSpinner = findViewById(R.id.role_spinner)
         generateButton = findViewById(R.id.generate_button)
         resultText = findViewById(R.id.result_text)
         reviewButton = findViewById(R.id.review_button)
         loadingText = findViewById(R.id.loading_text)
 
-        // Delay to show splash screen
+        // Setup role spinner with options
+        val roles = arrayOf("Student", "Professional")
+        val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        roleSpinner.adapter = adapter
+
+        // Splash screen delay
         Handler(Looper.getMainLooper()).postDelayed({
             isReady = true
         }, 1500)
 
+        // Button listeners
         generateButton.setOnClickListener {
             generatePlan()
         }
@@ -64,28 +81,32 @@ class MainActivity : AppCompatActivity() {
         val goal = goalInput.text.toString().trim()
         val deadline = deadlineInput.text.toString().trim()
         val hours = hoursInput.text.toString().trim()
+        val topics = topicsInput.text.toString().trim()
+        val role = roleSpinner.selectedItem.toString().lowercase()
 
         if (goal.isEmpty() || deadline.isEmpty() || hours.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show()
             return
         }
 
         loadingText.visibility = android.view.View.VISIBLE
         generateButton.isEnabled = false
         resultText.text = ""
+        reviewButton.visibility = android.view.View.GONE
 
         lifecycleScope.launch {
             try {
-                val plan = generateFakePlan(goal, deadline, hours)
+                val plan = callGeneratePlanAPI(goal, deadline.toInt(), hours.toInt(), role, topics)
                 withContext(Dispatchers.Main) {
                     resultText.text = plan
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                     reviewButton.visibility = android.view.View.VISIBLE
+                    reviewButton.text = "🔍 Review My Plan"
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    resultText.text = "Error: ${e.message}"
+                    resultText.text = "❌ Error: ${e.message}"
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                 }
@@ -94,31 +115,126 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun reviewPlan() {
-        Toast.makeText(this, "Plan review coming soon! 🚀", Toast.LENGTH_SHORT).show()
+        val currentPlan = resultText.text.toString()
+        if (currentPlan.isEmpty() || currentPlan.contains("Click 'Generate Plan'") || currentPlan.contains("Error")) {
+            Toast.makeText(this, "Please generate a valid plan first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val goal = goalInput.text.toString().trim()
+        if (goal.isEmpty()) {
+            Toast.makeText(this, "Please enter your goal first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Toast.makeText(this, "🤔 Reviewing your plan...", Toast.LENGTH_SHORT).show()
+        reviewButton.isEnabled = false
+
+        lifecycleScope.launch {
+            try {
+                val review = callReviewPlanAPI(currentPlan, goal)
+                withContext(Dispatchers.Main) {
+                    resultText.text = "🔍 PLAN REVIEW\n\n$review"
+                    reviewButton.text = "🔄 Review Again"
+                    reviewButton.isEnabled = true
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Review failed: ${e.message}", Toast.LENGTH_LONG).show()
+                    reviewButton.isEnabled = true
+                }
+            }
+        }
     }
 
-    private fun generateFakePlan(goal: String, deadline: String, hours: String): String {
-        return """
-            📋 YOUR PLAN: $goal
-            
-            ⏰ Timeline: $deadline days
-            📅 Daily Hours: $hours
-            
-            📆 WEEK 1:
-            • Monday: Topic 1 - 2 hours
-            • Tuesday: Topic 2 - 2 hours
-            • Wednesday: Topic 3 - 2 hours
-            • Thursday: Topic 4 - 2 hours
-            • Friday: Topic 5 - 2 hours
-            • Saturday: Revision - 2 hours
-            • Sunday: Rest
-            
-            💡 TIPS:
-            1. Start with the most difficult topic first
-            2. Take a 5-minute break every 25 minutes
-            3. Review what you learned at the end of each day
-            
-            ✨ Ask me to "Review My Plan" for suggestions!
-        """.trimIndent()
+    private suspend fun callGeneratePlanAPI(
+        goal: String,
+        deadline: Int,
+        dailyHours: Int,
+        role: String,
+        topics: String
+    ): String = withContext(Dispatchers.IO) {
+        val url = URL("$BACKEND_URL/generate-plan")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
+        connection.connectTimeout = 30000
+        connection.readTimeout = 60000
+
+        val jsonBody = JSONObject().apply {
+            put("goal", goal)
+            put("deadline", deadline)
+            put("daily_hours", dailyHours)
+            put("role", role)
+            put("topics", topics)
+        }
+
+        connection.outputStream.use { os ->
+            os.write(jsonBody.toString().toByteArray())
+        }
+
+        val responseCode = connection.responseCode
+        val inputStream = if (responseCode in 200..299) {
+            connection.inputStream
+        } else {
+            connection.errorStream
+        }
+
+        val response = inputStream.bufferedReader().use { it.readText() }
+        connection.disconnect()
+
+        if (responseCode in 200..299) {
+            val jsonResponse = JSONObject(response)
+            jsonResponse.getString("plan")
+        } else {
+            val errorMsg = try {
+                JSONObject(response).optString("detail", "Unknown server error")
+            } catch (e: Exception) {
+                "Server error: $responseCode"
+            }
+            throw Exception(errorMsg)
+        }
+    }
+
+    private suspend fun callReviewPlanAPI(plan: String, goal: String): String = withContext(Dispatchers.IO) {
+        val url = URL("$BACKEND_URL/review-plan")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
+        connection.connectTimeout = 30000
+        connection.readTimeout = 60000
+
+        val jsonBody = JSONObject().apply {
+            put("plan", plan)
+            put("goal", goal)
+        }
+
+        connection.outputStream.use { os ->
+            os.write(jsonBody.toString().toByteArray())
+        }
+
+        val responseCode = connection.responseCode
+        val inputStream = if (responseCode in 200..299) {
+            connection.inputStream
+        } else {
+            connection.errorStream
+        }
+
+        val response = inputStream.bufferedReader().use { it.readText() }
+        connection.disconnect()
+
+        if (responseCode in 200..299) {
+            val jsonResponse = JSONObject(response)
+            jsonResponse.getString("review")
+        } else {
+            val errorMsg = try {
+                JSONObject(response).optString("detail", "Unknown server error")
+            } catch (e: Exception) {
+                "Server error: $responseCode"
+            }
+            throw Exception(errorMsg)
+        }
     }
 }
