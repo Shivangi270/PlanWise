@@ -20,7 +20,7 @@
             android:textSize="32sp"
             android:textColor="@color/primary_blue"
             android:textStyle="bold"
-            android:layout_marginTop="32dp" />
+            android:layout_marginTop="16dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -28,13 +28,29 @@
             android:text="@string/tagline"
             android:textSize="16sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="16dp" />
 
-        <!-- Input Fields -->
+        <!-- Role Spinner -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/role_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="I am a..."
+                android:text="Student"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Goal Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -45,10 +61,11 @@
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Deadline Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -59,10 +76,11 @@
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Daily Hours Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="12dp"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -71,6 +89,21 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/hours_hint"
                 android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Topics Input (NEW) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/topics_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Topics to cover (e.g., Physics, Chemistry)"
+                android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Generate Button -->
@@ -92,26 +125,27 @@
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:visibility="gone"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="12dp" />
 
-        <!-- Result -->
+        <!-- Result Text -->
         <TextView
             android:id="@+id/result_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/result_background"
             android:textSize="14sp"
             android:textColor="@color/text_primary"
-            android:lineSpacingExtra="4dp" />
+            android:lineSpacingExtra="4dp"
+            android:text="Click 'Generate Plan' to create your personalized plan!" />
 
         <!-- Review Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/review_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:text="@string/review_plan"
             android:textSize="16sp"
             app:cornerRadius="8dp"
