@@ -23,13 +23,6 @@
             android:textSize="28sp"
             android:textColor="@color/primary_blue"
             android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/settings_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/ic_settings"
-            android:text="" />
     </LinearLayout>
 
     <!-- Welcome Message -->

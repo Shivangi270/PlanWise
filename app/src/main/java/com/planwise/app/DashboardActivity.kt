@@ -11,9 +11,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var welcomeText: TextView
-    private lateinit var createPlanButton: Button
+    private lateinit var createPlanButton: CardView
     private lateinit var viewPlansCard: CardView
-    private lateinit var settingsButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -24,7 +23,6 @@ class DashboardActivity : AppCompatActivity() {
         welcomeText = findViewById(R.id.welcome_text)
         createPlanButton = findViewById(R.id.create_plan_button)
         viewPlansCard = findViewById(R.id.view_plans_card)
-        settingsButton = findViewById(R.id.settings_button)
 
         // Set welcome message
         welcomeText.text = "Welcome to PlanWise! 🎯\nPlan Smarter, Achieve More"
@@ -39,12 +37,6 @@ class DashboardActivity : AppCompatActivity() {
         viewPlansCard.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
-        }
-
-        // Settings - for now, shows a placeholder
-        settingsButton.setOnClickListener {
-            // TODO: Open SettingsActivity
-            android.widget.Toast.makeText(this, "Settings coming soon!", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 }
