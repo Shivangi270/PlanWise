@@ -61,4 +61,7 @@ dependencies {
 
     // CardView for dashboard
     implementation 'androidx.cardview:cardview:1.0.0'
+
+    // Circle Image View for avatar
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 }
