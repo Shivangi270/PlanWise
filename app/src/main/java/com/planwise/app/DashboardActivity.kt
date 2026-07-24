@@ -19,7 +19,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var streakCount: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 

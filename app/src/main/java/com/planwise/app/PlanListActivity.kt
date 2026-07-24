@@ -10,12 +10,16 @@ class PlanListActivity : AppCompatActivity() {
     private lateinit var emptyText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plan_list)
 
-        // Initialize views
         emptyText = findViewById(R.id.empty_text)
         emptyText.text = "📋 Your plans will appear here\n\nCreate your first plan from the dashboard!"
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }

@@ -1,8 +1,6 @@
 package com.planwise.app
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -29,12 +27,7 @@ class MainActivity : AppCompatActivity() {
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
-        var isReady = false
-        splashScreen.setKeepOnScreenCondition {
-            !isReady
-        }
-
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -54,11 +47,6 @@ class MainActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
         roleInput.setAdapter(adapter)
         roleInput.setText("Student", false)
-
-        // Splash screen delay
-        Handler(Looper.getMainLooper()).postDelayed({
-            isReady = true
-        }, 1500)
 
         generateButton.setOnClickListener {
             generatePlan()
@@ -86,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        loadingText.text = "⏳ Generating your plan... (may take 15-30 seconds)"
+        loadingText.text = "⏳ Generating your plan..."
         loadingText.visibility = android.view.View.VISIBLE
         generateButton.isEnabled = false
         resultText.text = ""
@@ -101,7 +89,7 @@ class MainActivity : AppCompatActivity() {
                     generateButton.isEnabled = true
                     reviewButton.visibility = android.view.View.VISIBLE
                     reviewButton.text = "🔍 Review My Plan"
-                    Toast.makeText(this@MainActivity, "✅ Plan generated successfully!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "✅ Plan generated!", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -159,85 +147,77 @@ class MainActivity : AppCompatActivity() {
     ): String = withContext(Dispatchers.IO) {
         val url = URL("$BACKEND_URL/generate-plan")
         val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "POST"
-        connection.setRequestProperty("Content-Type", "application/json")
-        connection.doOutput = true
-        connection.connectTimeout = 30000
-        connection.readTimeout = 60000
+        try {
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 15000
+            connection.readTimeout = 30000
 
-        val jsonBody = JSONObject().apply {
-            put("goal", goal)
-            put("deadline", deadline)
-            put("daily_hours", dailyHours)
-            put("role", role)
-            put("topics", topics)
-        }
-
-        connection.outputStream.use { os ->
-            os.write(jsonBody.toString().toByteArray())
-        }
-
-        val responseCode = connection.responseCode
-        val inputStream = if (responseCode in 200..299) {
-            connection.inputStream
-        } else {
-            connection.errorStream
-        }
-
-        val response = inputStream.bufferedReader().use { it.readText() }
-        connection.disconnect()
-
-        if (responseCode in 200..299) {
-            val jsonResponse = JSONObject(response)
-            jsonResponse.getString("plan")
-        } else {
-            val errorMsg = try {
-                JSONObject(response).optString("detail", "Unknown server error")
-            } catch (e: Exception) {
-                "Server error: $responseCode"
+            val jsonBody = JSONObject().apply {
+                put("goal", goal)
+                put("deadline", deadline)
+                put("daily_hours", dailyHours)
+                put("role", role)
+                put("topics", topics)
             }
-            throw Exception(errorMsg)
+
+            connection.outputStream.use { os ->
+                os.write(jsonBody.toString().toByteArray())
+            }
+
+            val responseCode = connection.responseCode
+            val response = if (responseCode in 200..299) {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
+            }
+
+            if (responseCode in 200..299) {
+                val jsonResponse = JSONObject(response)
+                jsonResponse.getString("plan")
+            } else {
+                throw Exception("Server error $responseCode: $response")
+            }
+        } finally {
+            connection.disconnect()
         }
     }
 
     private suspend fun callReviewPlanAPI(plan: String, goal: String): String = withContext(Dispatchers.IO) {
         val url = URL("$BACKEND_URL/review-plan")
         val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "POST"
-        connection.setRequestProperty("Content-Type", "application/json")
-        connection.doOutput = true
-        connection.connectTimeout = 30000
-        connection.readTimeout = 60000
+        try {
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 15000
+            connection.readTimeout = 30000
 
-        val jsonBody = JSONObject().apply {
-            put("plan", plan)
-            put("goal", goal)
-        }
-
-        connection.outputStream.use { os ->
-            os.write(jsonBody.toString().toByteArray())
-        }
-
-        val responseCode = connection.responseCode
-        val inputStream = if (responseCode in 200..299) {
-            connection.inputStream
-        } else {
-            connection.errorStream
-        }
-
-        val response = inputStream.bufferedReader().use { it.readText() }
-        connection.disconnect()
-
-        if (responseCode in 200..299) {
-            val jsonResponse = JSONObject(response)
-            jsonResponse.getString("review")
-        } else {
-            val errorMsg = try {
-                JSONObject(response).optString("detail", "Unknown server error")
-            } catch (e: Exception) {
-                "Server error: $responseCode"
+            val jsonBody = JSONObject().apply {
+                put("plan", plan)
+                put("goal", goal)
             }
-            throw Exception(errorMsg)
+
+            connection.outputStream.use { os ->
+                os.write(jsonBody.toString().toByteArray())
+            }
+
+            val responseCode = connection.responseCode
+            val response = if (responseCode in 200..299) {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
+            }
+
+            if (responseCode in 200..299) {
+                val jsonResponse = JSONObject(response)
+                jsonResponse.getString("review")
+            } else {
+                throw Exception("Server error $responseCode: $response")
+            }
+        } finally {
+            connection.disconnect()
         }
     }
 }
