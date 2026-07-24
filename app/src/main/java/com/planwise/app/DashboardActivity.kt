@@ -47,22 +47,25 @@ class DashboardActivity : AppCompatActivity() {
         goalsCount.text = "0"
         streakCount.text = "0"
 
-        // Create Plan button - goes to MainActivity (plan creation)
+        // Create Plan button with smooth transition
         createPlanButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
-        // View Plans - goes to PlanListActivity
+        // View Plans with smooth transition
         viewPlansCard.setOnClickListener {
             val intent = Intent(this, PlanListActivity::class.java)
             startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         // Empty state create button
         emptyCreateButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
     }
 }

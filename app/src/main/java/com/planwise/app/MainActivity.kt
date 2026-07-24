@@ -10,10 +10,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import org.json.JSONObject
 import java.net.HttpURLConnection
-import java.net.SocketTimeoutException
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
@@ -71,6 +69,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    }
+
     private fun generatePlan() {
         val goal = goalInput.text.toString().trim()
         val deadline = deadlineInput.text.toString().trim()
@@ -91,9 +94,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val plan = withTimeout(45000) {  // 45 second timeout
-                    callGeneratePlanAPI(goal, deadline.toInt(), hours.toInt(), role, topics)
-                }
+                val plan = callGeneratePlanAPI(goal, deadline.toInt(), hours.toInt(), role, topics)
                 withContext(Dispatchers.Main) {
                     resultText.text = plan
                     loadingText.visibility = android.view.View.GONE
@@ -102,56 +103,9 @@ class MainActivity : AppCompatActivity() {
                     reviewButton.text = "🔍 Review My Plan"
                     Toast.makeText(this@MainActivity, "✅ Plan generated successfully!", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: SocketTimeoutException) {
-                withContext(Dispatchers.Main) {
-                    resultText.text = """
-                        ⏱️ PLAN GENERATION TIMEOUT
-                        
-                        The AI is taking too long to respond. This can happen on the free backend tier.
-                        
-                        💡 Try:
-                        1. Tap "Generate Plan" again
-                        2. Wait 10-15 seconds before trying again
-                        3. The first request may take up to 30 seconds
-                    """.trimIndent()
-                    loadingText.visibility = android.view.View.GONE
-                    generateButton.isEnabled = true
-                }
-            } catch (e: java.net.UnknownHostException) {
-                withContext(Dispatchers.Main) {
-                    resultText.text = """
-                        🌐 NETWORK ERROR
-                        
-                        Cannot reach the PlanWise server.
-                        
-                        💡 Check:
-                        1. Your internet connection
-                        2. The backend URL is correct
-                        3. The backend is running
-                    """.trimIndent()
-                    loadingText.visibility = android.view.View.GONE
-                    generateButton.isEnabled = true
-                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    val errorMsg = when {
-                        e.message?.contains("500") == true -> 
-                            "AI service error. Please try again later."
-                        e.message?.contains("429") == true -> 
-                            "Too many requests. Please wait a moment and try again."
-                        else -> 
-                            "${e.message}"
-                    }
-                    resultText.text = """
-                        ❌ GENERATION FAILED
-                        
-                        $errorMsg
-                        
-                        💡 Try:
-                        - Tap "Generate Plan" again
-                        - Restart the app
-                        - Try a simpler goal
-                    """.trimIndent()
+                    resultText.text = "❌ Error: ${e.message}"
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                 }
@@ -161,7 +115,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun reviewPlan() {
         val currentPlan = resultText.text.toString()
-        if (currentPlan.isEmpty() || currentPlan.contains("Click 'Generate Plan'") || currentPlan.contains("Error") || currentPlan.contains("TIMEOUT")) {
+        if (currentPlan.isEmpty() || currentPlan.contains("Click 'Generate Plan'") || currentPlan.contains("Error")) {
             Toast.makeText(this, "Please generate a valid plan first", Toast.LENGTH_SHORT).show()
             return
         }
@@ -178,9 +132,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val review = withTimeout(30000) {  // 30 second timeout for review
-                    callReviewPlanAPI(currentPlan, goal)
-                }
+                val review = callReviewPlanAPI(currentPlan, goal)
                 withContext(Dispatchers.Main) {
                     resultText.text = "🔍 PLAN REVIEW\n\n$review"
                     reviewButton.text = "🔄 Review Again"
@@ -190,13 +142,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    resultText.text = """
-                        ❌ REVIEW FAILED
-                        
-                        ${e.message}
-                        
-                        💡 Try generating a new plan first
-                    """.trimIndent()
+                    resultText.text = "❌ Review failed: ${e.message}"
                     reviewButton.isEnabled = true
                     loadingText.visibility = android.view.View.GONE
                 }
@@ -216,8 +162,8 @@ class MainActivity : AppCompatActivity() {
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json")
         connection.doOutput = true
-        connection.connectTimeout = 30000  // 30 seconds to connect
-        connection.readTimeout = 60000     // 60 seconds to read
+        connection.connectTimeout = 30000
+        connection.readTimeout = 60000
 
         val jsonBody = JSONObject().apply {
             put("goal", goal)
