@@ -14,6 +14,9 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var createPlanButton: CardView
     private lateinit var viewPlansCard: CardView
     private lateinit var emptyCreateButton: Button
+    private lateinit var plansCount: TextView
+    private lateinit var goalsCount: TextView
+    private lateinit var streakCount: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -25,6 +28,9 @@ class DashboardActivity : AppCompatActivity() {
         createPlanButton = findViewById(R.id.create_plan_button)
         viewPlansCard = findViewById(R.id.view_plans_card)
         emptyCreateButton = findViewById(R.id.empty_create_button)
+        plansCount = findViewById(R.id.plans_count)
+        goalsCount = findViewById(R.id.goals_count)
+        streakCount = findViewById(R.id.streak_count)
 
         // Set welcome message with time-based greeting
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
@@ -35,6 +41,11 @@ class DashboardActivity : AppCompatActivity() {
             else -> "Good Night! 🌙"
         }
         welcomeText.text = "$greeting\nPlan Smarter, Achieve More"
+
+        // Set placeholder stats
+        plansCount.text = "0"
+        goalsCount.text = "0"
+        streakCount.text = "0"
 
         // Create Plan button - goes to MainActivity (plan creation)
         createPlanButton.setOnClickListener {
