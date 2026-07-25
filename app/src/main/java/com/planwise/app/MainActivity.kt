@@ -6,10 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.json.JSONObject
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
@@ -31,7 +34,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize views
         goalInput = findViewById(R.id.goal_input)
         deadlineInput = findViewById(R.id.deadline_input)
         hoursInput = findViewById(R.id.hours_input)
@@ -42,19 +44,13 @@ class MainActivity : AppCompatActivity() {
         reviewButton = findViewById(R.id.review_button)
         loadingText = findViewById(R.id.loading_text)
 
-        // Setup role dropdown
         val roles = arrayOf("Student", "Professional")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
         roleInput.setAdapter(adapter)
         roleInput.setText("Student", false)
 
-        generateButton.setOnClickListener {
-            generatePlan()
-        }
-
-        reviewButton.setOnClickListener {
-            reviewPlan()
-        }
+        generateButton.setOnClickListener { generatePlan() }
+        reviewButton.setOnClickListener { reviewPlan() }
     }
 
     override fun onBackPressed() {
@@ -82,7 +78,10 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val plan = callGeneratePlanAPI(goal, deadline.toInt(), hours.toInt(), role, topics)
+                // Set a timeout of 60 seconds
+                val plan = withTimeout(60000) {
+                    callGeneratePlanAPI(goal, deadline.toInt(), hours.toInt(), role, topics)
+                }
                 withContext(Dispatchers.Main) {
                     resultText.text = plan
                     loadingText.visibility = android.view.View.GONE
@@ -90,6 +89,18 @@ class MainActivity : AppCompatActivity() {
                     reviewButton.visibility = android.view.View.VISIBLE
                     reviewButton.text = "🔍 Review My Plan"
                     Toast.makeText(this@MainActivity, "✅ Plan generated!", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: TimeoutCancellationException) {
+                withContext(Dispatchers.Main) {
+                    resultText.text = "⏱️ Request timed out. The server is taking too long to respond. Please try again."
+                    loadingText.visibility = android.view.View.GONE
+                    generateButton.isEnabled = true
+                }
+            } catch (e: SocketTimeoutException) {
+                withContext(Dispatchers.Main) {
+                    resultText.text = "🌐 Network timeout. Please check your connection and try again."
+                    loadingText.visibility = android.view.View.GONE
+                    generateButton.isEnabled = true
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -103,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun reviewPlan() {
         val currentPlan = resultText.text.toString()
-        if (currentPlan.isEmpty() || currentPlan.contains("Click 'Generate Plan'") || currentPlan.contains("Error")) {
+        if (currentPlan.isEmpty() || currentPlan.contains("Click 'Generate Plan'") || currentPlan.contains("Error") || currentPlan.contains("timeout")) {
             Toast.makeText(this, "Please generate a valid plan first", Toast.LENGTH_SHORT).show()
             return
         }
@@ -120,13 +131,21 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val review = callReviewPlanAPI(currentPlan, goal)
+                val review = withTimeout(45000) {
+                    callReviewPlanAPI(currentPlan, goal)
+                }
                 withContext(Dispatchers.Main) {
                     resultText.text = "🔍 PLAN REVIEW\n\n$review"
                     reviewButton.text = "🔄 Review Again"
                     reviewButton.isEnabled = true
                     loadingText.visibility = android.view.View.GONE
                     Toast.makeText(this@MainActivity, "✅ Review complete!", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: TimeoutCancellationException) {
+                withContext(Dispatchers.Main) {
+                    resultText.text = "⏱️ Review timed out. Please try again."
+                    reviewButton.isEnabled = true
+                    loadingText.visibility = android.view.View.GONE
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -177,7 +196,7 @@ class MainActivity : AppCompatActivity() {
                 val jsonResponse = JSONObject(response)
                 jsonResponse.getString("plan")
             } else {
-                throw Exception("Server error $responseCode: $response")
+                throw Exception("Server error $responseCode")
             }
         } finally {
             connection.disconnect()
@@ -214,7 +233,7 @@ class MainActivity : AppCompatActivity() {
                 val jsonResponse = JSONObject(response)
                 jsonResponse.getString("review")
             } else {
-                throw Exception("Server error $responseCode: $response")
+                throw Exception("Server error $responseCode")
             }
         } finally {
             connection.disconnect()
