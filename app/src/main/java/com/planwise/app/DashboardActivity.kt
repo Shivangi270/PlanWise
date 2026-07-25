@@ -3,10 +3,14 @@ package com.planwise.app
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import com.planwise.app.data.PlanDatabase
+import kotlinx.coroutines.launch
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -17,6 +21,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var plansCount: TextView
     private lateinit var goalsCount: TextView
     private lateinit var streakCount: TextView
+    private lateinit var recentPlansContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -31,6 +36,7 @@ class DashboardActivity : AppCompatActivity() {
         plansCount = findViewById(R.id.plans_count)
         goalsCount = findViewById(R.id.goals_count)
         streakCount = findViewById(R.id.streak_count)
+        recentPlansContainer = findViewById(R.id.recent_plans_container)
 
         // Set welcome message with time-based greeting
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
@@ -66,6 +72,57 @@ class DashboardActivity : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+
+        // Load recent plans and stats
+        loadRecentPlans()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadRecentPlans()
+    }
+
+    private fun loadRecentPlans() {
+        lifecycleScope.launch {
+            val plans = PlanDatabase.getDatabase(this@DashboardActivity)
+                .planDao()
+                .getAllPlans()
+                .collect { planList ->
+                    // Update stats
+                    plansCount.text = planList.size.toString()
+                    
+                    // Update recent plans
+                    recentPlansContainer.removeAllViews()
+                    
+                    if (planList.isEmpty()) {
+                        // Show empty state
+                        val emptyView = layoutInflater.inflate(R.layout.item_empty_recent, recentPlansContainer, false)
+                        recentPlansContainer.addView(emptyView)
+                    } else {
+                        // Show up to 3 most recent plans
+                        val recentPlans = planList.take(3)
+                        for (plan in recentPlans) {
+                            val planView = layoutInflater.inflate(R.layout.item_recent_plan, recentPlansContainer, false)
+                            val goalText = planView.findViewById<TextView>(R.id.recent_plan_goal)
+                            val dateText = planView.findViewById<TextView>(R.id.recent_plan_date)
+                            
+                            goalText.text = plan.goal
+                            val date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+                                .format(java.util.Date(plan.createdAt))
+                            dateText.text = date
+                            
+                            planView.setOnClickListener {
+                                val intent = Intent(this@DashboardActivity, PlanDetailActivity::class.java)
+                                intent.putExtra("plan_id", plan.id)
+                                startActivity(intent)
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                            }
+                            
+                            recentPlansContainer.addView(planView)
+                        }
+                    }
+                }
         }
     }
 }

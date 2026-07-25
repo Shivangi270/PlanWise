@@ -1,9 +1,9 @@
 package com.planwise.app.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -13,6 +13,9 @@ interface PlanDao {
 
     @Query("SELECT * FROM plans ORDER BY createdAt DESC")
     fun getAllPlans(): Flow<List<Plan>>
+
+    @Query("SELECT * FROM plans WHERE id = :planId")
+    suspend fun getPlanById(planId: Long): Plan?
 
     @Delete
     suspend fun deletePlan(plan: Plan)

@@ -35,6 +35,12 @@
             android:exported="false"
             android:theme="@style/Theme.PlanWise" />
         
+        <!-- Plan Detail Activity -->
+        <activity
+            android:name=".PlanDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PlanWise" />
+        
     </application>
 
 </manifest>
