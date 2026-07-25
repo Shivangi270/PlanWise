@@ -5,6 +5,8 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
+import com.planwise.app.data.Plan
+import com.planwise.app.data.PlanDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
@@ -26,8 +28,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var resultText: TextView
     private lateinit var reviewButton: Button
     private lateinit var loadingText: TextView
+    private lateinit var savePlanButton: Button
 
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
+    private var currentPlanText: String = ""
+    private var currentGoal: String = ""
+    private var currentDeadline: Int = 0
+    private var currentHours: Int = 0
+    private var currentRole: String = ""
+    private var currentTopics: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -43,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         resultText = findViewById(R.id.result_text)
         reviewButton = findViewById(R.id.review_button)
         loadingText = findViewById(R.id.loading_text)
+        savePlanButton = findViewById(R.id.save_plan_button)
 
         val roles = arrayOf("Student", "Professional")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
@@ -51,6 +61,10 @@ class MainActivity : AppCompatActivity() {
 
         generateButton.setOnClickListener { generatePlan() }
         reviewButton.setOnClickListener { reviewPlan() }
+        savePlanButton.setOnClickListener { savePlanToDatabase() }
+        
+        // Hide save button initially
+        savePlanButton.visibility = android.view.View.GONE
     }
 
     override fun onBackPressed() {
@@ -59,46 +73,51 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun generatePlan() {
-        val goal = goalInput.text.toString().trim()
-        val deadline = deadlineInput.text.toString().trim()
-        val hours = hoursInput.text.toString().trim()
-        val topics = topicsInput.text.toString().trim()
-        val role = roleInput.text.toString().lowercase()
+        currentGoal = goalInput.text.toString().trim()
+        val deadlineStr = deadlineInput.text.toString().trim()
+        val hoursStr = hoursInput.text.toString().trim()
+        currentTopics = topicsInput.text.toString().trim()
+        currentRole = roleInput.text.toString().lowercase()
 
-        if (goal.isEmpty() || deadline.isEmpty() || hours.isEmpty()) {
+        if (currentGoal.isEmpty() || deadlineStr.isEmpty() || hoursStr.isEmpty()) {
             Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show()
             return
         }
+
+        currentDeadline = deadlineStr.toInt()
+        currentHours = hoursStr.toInt()
 
         loadingText.text = "⏳ Generating your plan..."
         loadingText.visibility = android.view.View.VISIBLE
         generateButton.isEnabled = false
         resultText.text = ""
         reviewButton.visibility = android.view.View.GONE
+        savePlanButton.visibility = android.view.View.GONE
 
         lifecycleScope.launch {
             try {
-                // Set a timeout of 60 seconds
                 val plan = withTimeout(60000) {
-                    callGeneratePlanAPI(goal, deadline.toInt(), hours.toInt(), role, topics)
+                    callGeneratePlanAPI(currentGoal, currentDeadline, currentHours, currentRole, currentTopics)
                 }
+                currentPlanText = plan
                 withContext(Dispatchers.Main) {
                     resultText.text = plan
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                     reviewButton.visibility = android.view.View.VISIBLE
                     reviewButton.text = "🔍 Review My Plan"
+                    savePlanButton.visibility = android.view.View.VISIBLE
                     Toast.makeText(this@MainActivity, "✅ Plan generated!", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: TimeoutCancellationException) {
                 withContext(Dispatchers.Main) {
-                    resultText.text = "⏱️ Request timed out. The server is taking too long to respond. Please try again."
+                    resultText.text = "⏱️ Request timed out. Please try again."
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                 }
             } catch (e: SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
-                    resultText.text = "🌐 Network timeout. Please check your connection and try again."
+                    resultText.text = "🌐 Network timeout. Please check your connection."
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                 }
@@ -113,14 +132,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun reviewPlan() {
-        val currentPlan = resultText.text.toString()
-        if (currentPlan.isEmpty() || currentPlan.contains("Click 'Generate Plan'") || currentPlan.contains("Error") || currentPlan.contains("timeout")) {
+        if (currentPlanText.isEmpty() || currentPlanText.contains("Error") || currentPlanText.contains("timeout")) {
             Toast.makeText(this, "Please generate a valid plan first", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val goal = goalInput.text.toString().trim()
-        if (goal.isEmpty()) {
+        if (currentGoal.isEmpty()) {
             Toast.makeText(this, "Please enter your goal first", Toast.LENGTH_SHORT).show()
             return
         }
@@ -132,7 +149,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val review = withTimeout(45000) {
-                    callReviewPlanAPI(currentPlan, goal)
+                    callReviewPlanAPI(currentPlanText, currentGoal)
                 }
                 withContext(Dispatchers.Main) {
                     resultText.text = "🔍 PLAN REVIEW\n\n$review"
@@ -157,6 +174,51 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun savePlanToDatabase() {
+        if (currentPlanText.isEmpty()) {
+            Toast.makeText(this, "No plan to save", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        loadingText.text = "💾 Saving plan..."
+        loadingText.visibility = android.view.View.VISIBLE
+        savePlanButton.isEnabled = false
+
+        lifecycleScope.launch {
+            try {
+                val plan = Plan(
+                    goal = currentGoal,
+                    deadline = currentDeadline,
+                    dailyHours = currentHours,
+                    role = currentRole,
+                    topics = currentTopics,
+                    planText = currentPlanText,
+                    createdAt = System.currentTimeMillis()
+                )
+                
+                withContext(Dispatchers.IO) {
+                    PlanDatabase.getDatabase(this@MainActivity)
+                        .planDao()
+                        .insertPlan(plan)
+                }
+                
+                withContext(Dispatchers.Main) {
+                    loadingText.visibility = android.view.View.GONE
+                    savePlanButton.isEnabled = true
+                    savePlanButton.visibility = android.view.View.GONE
+                    Toast.makeText(this@MainActivity, "✅ Plan saved successfully!", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    loadingText.visibility = android.view.View.GONE
+                    savePlanButton.isEnabled = true
+                    Toast.makeText(this@MainActivity, "❌ Failed to save plan: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    // API call functions (unchanged from previous version)
     private suspend fun callGeneratePlanAPI(
         goal: String,
         deadline: Int,

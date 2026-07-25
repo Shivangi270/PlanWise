@@ -227,6 +227,19 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Save Plan Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/save_plan_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💾 Save Plan"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:padding="16dp"
+            android:backgroundTint="@color/secondary_teal"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp" />
+
         <!-- Review Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/review_button"
@@ -236,7 +249,7 @@
             android:textSize="16sp"
             app:cornerRadius="12dp"
             android:padding="16dp"
-            android:backgroundTint="@color/secondary_teal"
+            android:backgroundTint="@color/primary_blue"
             android:visibility="gone" />
 
     </LinearLayout>
