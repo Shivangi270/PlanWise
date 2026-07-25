@@ -16,17 +16,47 @@
         android:clickable="true"
         android:focusable="true"
         android:onClick="onBackPressed"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="8dp" />
 
-    <!-- Header -->
-    <TextView
+    <!-- Header with Gradient Background -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="My Plans"
-        android:textSize="24sp"
-        android:textColor="@color/text_primary"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        android:layout_marginBottom="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/dashboard_header_gradient"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📋 My Plans"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="All your plans in one place"
+                android:textSize="14sp"
+                android:textColor="#E0E0E0"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- RecyclerView for Plans -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/plan_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
 
     <!-- Empty State -->
     <androidx.cardview.widget.CardView

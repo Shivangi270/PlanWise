@@ -26,7 +26,6 @@ class PlanListActivity : AppCompatActivity() {
         emptyText = findViewById(R.id.empty_text)
 
         adapter = PlanAdapter(emptyList()) { plan ->
-            // TODO: View plan details
             android.widget.Toast.makeText(this, "Viewing: ${plan.goal}", android.widget.Toast.LENGTH_SHORT).show()
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -42,7 +41,7 @@ class PlanListActivity : AppCompatActivity() {
 
     private fun loadPlans() {
         lifecycleScope.launch {
-            val plans = PlanDatabase.getDatabase(this@PlanListActivity)
+            PlanDatabase.getDatabase(this@PlanListActivity)
                 .planDao()
                 .getAllPlans()
                 .collect { planList ->
