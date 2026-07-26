@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_light">
+    android:background="@color/background_light"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -48,12 +49,57 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Update your plan details"
+                    android:text="Edit the plan or regenerate with new inputs"
                     android:textSize="14sp"
                     android:textColor="#E0E0E0"
                     android:layout_marginTop="4dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <!-- SECTION 1: Edit Plan Content -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📝 Edit Plan Content"
+            android:textSize="16sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_plan_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="12"
+                android:maxLines="20"
+                android:gravity="start|top"
+                android:hint="Edit the plan content here..."
+                android:inputType="textMultiLine" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- SECTION 2: Regenerate with New Inputs -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔄 Regenerate with New Inputs"
+            android:textSize="16sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update the fields below and tap 'Regenerate' to create a new plan"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="12dp" />
 
         <!-- Role Selector -->
         <TextView
@@ -175,36 +221,56 @@
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Buttons -->
+        <!-- Loading Text -->
+        <TextView
+            android:id="@+id/edit_loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading..."
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp"
+            android:layout_gravity="center" />
+
+        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_marginTop="8dp">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/edit_cancel_button"
-                android:layout_width="0dp"
+                android:id="@+id/edit_update_button"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Cancel"
-                android:textSize="16sp"
-                app:cornerRadius="12dp"
-                android:padding="16dp"
-                android:backgroundTint="@color/text_secondary"
-                android:layout_marginEnd="8dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/edit_save_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="💾 Save Changes"
+                android:text="💾 Update Plan"
                 android:textSize="16sp"
                 app:cornerRadius="12dp"
                 android:padding="16dp"
                 android:backgroundTint="@color/primary_blue"
-                android:layout_marginStart="8dp" />
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/edit_regenerate_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔄 Regenerate from Inputs"
+                android:textSize="16sp"
+                app:cornerRadius="12dp"
+                android:padding="16dp"
+                android:backgroundTint="@color/secondary_teal"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/edit_cancel_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:textSize="16sp"
+                app:cornerRadius="12dp"
+                android:padding="16dp"
+                android:backgroundTint="@color/text_secondary" />
         </LinearLayout>
 
     </LinearLayout>
