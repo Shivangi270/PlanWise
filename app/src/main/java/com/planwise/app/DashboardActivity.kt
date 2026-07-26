@@ -10,9 +10,7 @@ import androidx.cardview.widget.CardView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.PlanDatabase
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -81,29 +79,28 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun loadDashboardData() {
         lifecycleScope.launch {
-            val dao = PlanDatabase.getDatabase(this@DashboardActivity).planDao()
-            
-            // Get total plans count
-            val totalPlans = withContext(Dispatchers.IO) {
-                dao.getAllPlans().collect { list ->
+            val plans = PlanDatabase.getDatabase(this@DashboardActivity)
+                .planDao()
+                .getAllPlans()
+                .collect { planList ->
                     // Update Plans Created
-                    plansCount.text = list.size.toString()
-                    
-                    // Update Goals Achieved (completed plans)
-                    val completed = list.filter { it.isCompleted }.size
+                    plansCount.text = planList.size.toString()
+
+                    // Update Goals Achieved
+                    val completed = planList.filter { it.isCompleted }.size
                     goalsCount.text = completed.toString()
-                    
-                    // Update Day Streak
-                    streakCount.text = calculateStreak(list).toString()
-                    
+
+                    // Update Day Streak with Freeze Logic
+                    streakCount.text = calculateStreakWithFreeze(planList).toString()
+
                     // Update Recent Plans
                     recentPlansContainer.removeAllViews()
                     
-                    if (list.isEmpty()) {
+                    if (planList.isEmpty()) {
                         val emptyView = layoutInflater.inflate(R.layout.item_empty_recent, recentPlansContainer, false)
                         recentPlansContainer.addView(emptyView)
                     } else {
-                        val recentPlans = list.take(3)
+                        val recentPlans = planList.take(3)
                         for (plan in recentPlans) {
                             val planView = layoutInflater.inflate(R.layout.item_recent_plan, recentPlansContainer, false)
                             val goalText = planView.findViewById<TextView>(R.id.recent_plan_goal)
@@ -125,11 +122,10 @@ class DashboardActivity : AppCompatActivity() {
                         }
                     }
                 }
-            }
         }
     }
 
-    private fun calculateStreak(plans: List<com.planwise.app.data.Plan>): Int {
+    private fun calculateStreakWithFreeze(plans: List<com.planwise.app.data.Plan>): Int {
         if (plans.isEmpty()) return 0
         
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -140,28 +136,54 @@ class DashboardActivity : AppCompatActivity() {
         if (dates.isEmpty()) return 0
         
         val today = dateFormat.format(Date())
+        val calendar = Calendar.getInstance()
+        
+        // Check if there's a plan today
+        val hasToday = dates.contains(today)
+        
+        // Check yesterday
+        calendar.add(Calendar.DAY_OF_YEAR, -1)
+        val yesterday = dateFormat.format(calendar.time)
+        val hasYesterday = dates.contains(yesterday)
+        
+        // If no plan today and no plan yesterday, reset streak
+        if (!hasToday && !hasYesterday) {
+            return 0
+        }
+        
+        // If no plan today but plan yesterday, freeze streak
+        if (!hasToday && hasYesterday) {
+            // Count streak from yesterday backwards
+            var streak = 0
+            var currentDate = dateFormat.parse(yesterday) ?: Date()
+            
+            while (true) {
+                val dateStr = dateFormat.format(currentDate)
+                if (dates.contains(dateStr)) {
+                    streak++
+                    val cal = Calendar.getInstance()
+                    cal.time = currentDate
+                    cal.add(Calendar.DAY_OF_YEAR, -1)
+                    currentDate = cal.time
+                } else {
+                    break
+                }
+            }
+            return streak // Frozen streak
+        }
+        
+        // If plan today, count from today backwards
         var streak = 0
         var currentDate = dateFormat.parse(today) ?: Date()
-        
-        if (!dates.contains(today)) {
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
-            val yesterday = dateFormat.format(calendar.time)
-            
-            if (!dates.contains(yesterday)) {
-                return 0
-            }
-            currentDate = calendar.time
-        }
         
         while (true) {
             val dateStr = dateFormat.format(currentDate)
             if (dates.contains(dateStr)) {
                 streak++
-                val calendar = Calendar.getInstance()
-                calendar.time = currentDate
-                calendar.add(Calendar.DAY_OF_YEAR, -1)
-                currentDate = calendar.time
+                val cal = Calendar.getInstance()
+                cal.time = currentDate
+                cal.add(Calendar.DAY_OF_YEAR, -1)
+                currentDate = cal.time
             } else {
                 break
             }
