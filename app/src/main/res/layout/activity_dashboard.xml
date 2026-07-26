@@ -43,12 +43,17 @@
                         android:textColor="#FFFFFF"
                         android:textStyle="bold" />
 
-                    <de.hdodenhof.circleimageview.CircleImageView
+                    <!-- Profile Icon - Navigates to Profile -->
+                    <ImageView
+                        android:id="@+id/profile_icon"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:src="@drawable/ic_user_avatar"
-                        app:civ_border_width="2dp"
-                        app:civ_border_color="#FFFFFF" />
+                        android:src="@drawable/ic_profile"
+                        android:padding="8dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="@drawable/avatar_background"
+                        android:contentDescription="Profile" />
                 </LinearLayout>
 
                 <!-- Subtitle -->
@@ -272,55 +277,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Empty State -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp"
-                    android:gravity="center">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📭"
-                        android:textSize="48sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="No plans yet"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_primary"
-                        android:textStyle="bold"
-                        android:layout_marginTop="12dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Create your first plan and start achieving your goals!"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        android:gravity="center"
-                        android:layout_marginTop="4dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/empty_create_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Create Plan"
-                        android:textSize="14sp"
-                        app:cornerRadius="8dp"
-                        android:backgroundTint="@color/primary_blue"
-                        android:layout_marginTop="16dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            <!-- Empty state will be populated dynamically -->
         </LinearLayout>
 
         <!-- Motivational Quote -->

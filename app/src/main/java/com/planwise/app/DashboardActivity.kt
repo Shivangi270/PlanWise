@@ -3,6 +3,7 @@ package com.planwise.app
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var goalsCount: TextView
     private lateinit var streakCount: TextView
     private lateinit var recentPlansContainer: LinearLayout
+    private lateinit var profileIcon: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -39,6 +41,7 @@ class DashboardActivity : AppCompatActivity() {
         goalsCount = findViewById(R.id.goals_count)
         streakCount = findViewById(R.id.streak_count)
         recentPlansContainer = findViewById(R.id.recent_plans_container)
+        profileIcon = findViewById(R.id.profile_icon)
 
         // Set welcome message with time-based greeting
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -69,6 +72,12 @@ class DashboardActivity : AppCompatActivity() {
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
+        profileIcon.setOnClickListener {
+            val intent = Intent(this, ProfileActivity::class.java)
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+
         loadDashboardData()
     }
 
@@ -79,53 +88,52 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun loadDashboardData() {
         lifecycleScope.launch {
-            val plans = PlanDatabase.getDatabase(this@DashboardActivity)
-                .planDao()
-                .getAllPlans()
-                .collect { planList ->
-                    // Update Plans Created
-                    plansCount.text = planList.size.toString()
+            val dao = PlanDatabase.getDatabase(this@DashboardActivity).planDao()
+            
+            dao.getAllPlans().collect { planList ->
+                // Update Plans Created
+                plansCount.text = planList.size.toString()
 
-                    // Update Goals Achieved
-                    val completed = planList.filter { it.isCompleted }.size
-                    goalsCount.text = completed.toString()
+                // Update Goals Achieved
+                val completed = planList.filter { it.isCompleted }.size
+                goalsCount.text = completed.toString()
 
-                    // Update Day Streak with Freeze Logic
-                    streakCount.text = calculateStreakWithFreeze(planList).toString()
+                // Update Day Streak
+                streakCount.text = calculateStreak(planList).toString()
 
-                    // Update Recent Plans
-                    recentPlansContainer.removeAllViews()
-                    
-                    if (planList.isEmpty()) {
-                        val emptyView = layoutInflater.inflate(R.layout.item_empty_recent, recentPlansContainer, false)
-                        recentPlansContainer.addView(emptyView)
-                    } else {
-                        val recentPlans = planList.take(3)
-                        for (plan in recentPlans) {
-                            val planView = layoutInflater.inflate(R.layout.item_recent_plan, recentPlansContainer, false)
-                            val goalText = planView.findViewById<TextView>(R.id.recent_plan_goal)
-                            val dateText = planView.findViewById<TextView>(R.id.recent_plan_date)
-                            
-                            goalText.text = plan.goal
-                            val date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-                                .format(Date(plan.createdAt))
-                            dateText.text = date
-                            
-                            planView.setOnClickListener {
-                                val intent = Intent(this@DashboardActivity, PlanDetailActivity::class.java)
-                                intent.putExtra("plan_id", plan.id)
-                                startActivity(intent)
-                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                            }
-                            
-                            recentPlansContainer.addView(planView)
+                // Update Recent Plans
+                recentPlansContainer.removeAllViews()
+                
+                if (planList.isEmpty()) {
+                    val emptyView = layoutInflater.inflate(R.layout.item_empty_recent, recentPlansContainer, false)
+                    recentPlansContainer.addView(emptyView)
+                } else {
+                    val recentPlans = planList.take(3)
+                    for (plan in recentPlans) {
+                        val planView = layoutInflater.inflate(R.layout.item_recent_plan, recentPlansContainer, false)
+                        val goalText = planView.findViewById<TextView>(R.id.recent_plan_goal)
+                        val dateText = planView.findViewById<TextView>(R.id.recent_plan_date)
+                        
+                        goalText.text = plan.goal
+                        val date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                            .format(Date(plan.createdAt))
+                        dateText.text = date
+                        
+                        planView.setOnClickListener {
+                            val intent = Intent(this@DashboardActivity, PlanDetailActivity::class.java)
+                            intent.putExtra("plan_id", plan.id)
+                            startActivity(intent)
+                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         }
+                        
+                        recentPlansContainer.addView(planView)
                     }
                 }
+            }
         }
     }
 
-    private fun calculateStreakWithFreeze(plans: List<com.planwise.app.data.Plan>): Int {
+    private fun calculateStreak(plans: List<com.planwise.app.data.Plan>): Int {
         if (plans.isEmpty()) return 0
         
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -138,25 +146,18 @@ class DashboardActivity : AppCompatActivity() {
         val today = dateFormat.format(Date())
         val calendar = Calendar.getInstance()
         
-        // Check if there's a plan today
         val hasToday = dates.contains(today)
-        
-        // Check yesterday
         calendar.add(Calendar.DAY_OF_YEAR, -1)
         val yesterday = dateFormat.format(calendar.time)
         val hasYesterday = dates.contains(yesterday)
         
-        // If no plan today and no plan yesterday, reset streak
         if (!hasToday && !hasYesterday) {
             return 0
         }
         
-        // If no plan today but plan yesterday, freeze streak
         if (!hasToday && hasYesterday) {
-            // Count streak from yesterday backwards
             var streak = 0
             var currentDate = dateFormat.parse(yesterday) ?: Date()
-            
             while (true) {
                 val dateStr = dateFormat.format(currentDate)
                 if (dates.contains(dateStr)) {
@@ -169,13 +170,11 @@ class DashboardActivity : AppCompatActivity() {
                     break
                 }
             }
-            return streak // Frozen streak
+            return streak
         }
         
-        // If plan today, count from today backwards
         var streak = 0
         var currentDate = dateFormat.parse(today) ?: Date()
-        
         while (true) {
             val dateStr = dateFormat.format(currentDate)
             if (dates.contains(dateStr)) {
@@ -188,7 +187,6 @@ class DashboardActivity : AppCompatActivity() {
                 break
             }
         }
-        
         return streak
     }
 }
