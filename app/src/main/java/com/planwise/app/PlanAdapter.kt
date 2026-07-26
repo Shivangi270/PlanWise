@@ -9,13 +9,15 @@ import com.planwise.app.data.Plan
 
 class PlanAdapter(
     private var plans: List<Plan>,
-    private val onItemClick: (Plan) -> Unit
+    private val onItemClick: (Plan) -> Unit,
+    private val onDeleteClick: (Plan, Int) -> Unit  // Added delete callback
 ) : RecyclerView.Adapter<PlanAdapter.PlanViewHolder>() {
 
     class PlanViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val goalText: TextView = itemView.findViewById(R.id.plan_goal_text)
         val detailsText: TextView = itemView.findViewById(R.id.plan_details_text)
         val dateText: TextView = itemView.findViewById(R.id.plan_date_text)
+        val deleteButton: View = itemView.findViewById(R.id.plan_delete_button)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlanViewHolder {
@@ -31,8 +33,14 @@ class PlanAdapter(
         holder.dateText.text = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
             .format(java.util.Date(plan.createdAt))
         
+        // Click to view plan details
         holder.itemView.setOnClickListener {
             onItemClick(plan)
+        }
+        
+        // Delete button
+        holder.deleteButton.setOnClickListener {
+            onDeleteClick(plan, position)
         }
     }
 
