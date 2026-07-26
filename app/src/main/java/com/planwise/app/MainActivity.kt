@@ -94,7 +94,6 @@ class MainActivity : AppCompatActivity() {
         reviewButton.visibility = android.view.View.GONE
         savePlanButton.visibility = android.view.View.GONE
 
-        // Simulate network delay
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             currentPlanText = """
 📋 MOCK PLAN: $currentGoal
@@ -204,24 +203,38 @@ class MainActivity : AppCompatActivity() {
         loadingText.visibility = android.view.View.VISIBLE
         reviewButton.isEnabled = false
 
-        lifecycleScope.launch {
-            try {
-                val review = callReviewPlanAPI(currentPlanText, currentGoal)
-                withContext(Dispatchers.Main) {
-                    resultText.text = "🔍 PLAN REVIEW\n\n$review"
-                    reviewButton.text = "🔄 Review Again"
-                    reviewButton.isEnabled = true
-                    loadingText.visibility = android.view.View.GONE
-                    Toast.makeText(this@MainActivity, "✅ Review complete!", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    resultText.text = "❌ Review failed: ${e.message}"
-                    reviewButton.isEnabled = true
-                    loadingText.visibility = android.view.View.GONE
-                }
-            }
-        }
+        // Show mock review instantly for testing
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            val mockReview = """
+🔍 PLAN REVIEW
+
+✅ REALITY CHECK:
+Your plan to complete "$currentGoal" in $currentDeadline days with $currentHours hours daily is ambitious but achievable!
+
+💡 SUGGESTIONS:
+1. Break down the topics into smaller chunks
+2. Start each day with the most difficult topic
+3. Include 10-minute breaks between study sessions
+4. Review previous day's learning before starting new topics
+
+🎯 OPTIMIZED APPROACH:
+- Week 1-2: Foundation topics (2 hours)
+- Week 3-4: Advanced topics (2 hours)
+- Week 5-6: Revision and practice (2 hours)
+- Week 7-8: Mock tests and weak areas (2 hours)
+
+📊 RECOMMENDATION:
+Consider increasing daily hours to 5 on weekends for better coverage.
+
+✨ This is a mock review for testing purposes.
+""".trimIndent()
+
+            resultText.text = mockReview
+            reviewButton.text = "🔄 Review Again"
+            reviewButton.isEnabled = true
+            loadingText.visibility = android.view.View.GONE
+            Toast.makeText(this, "✅ Review complete!", Toast.LENGTH_SHORT).show()
+        }, 1500)
     }
 
     private fun savePlanToDatabase() {
@@ -314,40 +327,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Review API is now mocked, so we keep this function but don't use it
     private suspend fun callReviewPlanAPI(plan: String, goal: String): String = withContext(Dispatchers.IO) {
-        val url = URL("$BACKEND_URL/review-plan")
-        val connection = url.openConnection() as HttpURLConnection
-        try {
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.doOutput = true
-            connection.connectTimeout = 15000
-            connection.readTimeout = 30000
-
-            val jsonBody = JSONObject().apply {
-                put("plan", plan)
-                put("goal", goal)
-            }
-
-            connection.outputStream.use { os ->
-                os.write(jsonBody.toString().toByteArray())
-            }
-
-            val responseCode = connection.responseCode
-            val response = if (responseCode in 200..299) {
-                connection.inputStream.bufferedReader().use { it.readText() }
-            } else {
-                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
-            }
-
-            if (responseCode in 200..299) {
-                val jsonResponse = JSONObject(response)
-                jsonResponse.getString("review")
-            } else {
-                throw Exception("Server error $responseCode")
-            }
-        } finally {
-            connection.disconnect()
-        }
+        // This function is no longer used - review is mocked
+        return@withContext "Mock review"
     }
 }

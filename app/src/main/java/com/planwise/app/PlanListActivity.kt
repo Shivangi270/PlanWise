@@ -1,5 +1,6 @@
 package com.planwise.app
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -25,8 +26,13 @@ class PlanListActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.plan_recycler_view)
         emptyText = findViewById(R.id.empty_text)
 
+        // Initialize adapter with click listener
         adapter = PlanAdapter(emptyList()) { plan ->
-            android.widget.Toast.makeText(this, "Viewing: ${plan.goal}", android.widget.Toast.LENGTH_SHORT).show()
+            // Navigate to PlanDetailActivity when a plan is clicked
+            val intent = Intent(this, PlanDetailActivity::class.java)
+            intent.putExtra("plan_id", plan.id)
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
