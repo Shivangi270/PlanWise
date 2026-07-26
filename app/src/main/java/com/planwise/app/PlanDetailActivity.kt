@@ -1,6 +1,8 @@
 package com.planwise.app
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -16,6 +18,9 @@ class PlanDetailActivity : AppCompatActivity() {
     private lateinit var detailsText: TextView
     private lateinit var planContentText: TextView
     private lateinit var dateText: TextView
+    private lateinit var editButton: ImageView
+
+    private var planId: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -26,12 +31,27 @@ class PlanDetailActivity : AppCompatActivity() {
         detailsText = findViewById(R.id.detail_details_text)
         planContentText = findViewById(R.id.detail_plan_content)
         dateText = findViewById(R.id.detail_date_text)
+        editButton = findViewById(R.id.detail_edit_button)
 
-        val planId = intent.getLongExtra("plan_id", -1)
+        planId = intent.getLongExtra("plan_id", -1)
         if (planId != -1L) {
             loadPlan(planId)
         } else {
             goalText.text = "Plan not found"
+        }
+
+        editButton.setOnClickListener {
+            val intent = Intent(this, PlanEditActivity::class.java)
+            intent.putExtra("plan_id", planId)
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (planId != -1L) {
+            loadPlan(planId)
         }
     }
 
