@@ -10,7 +10,11 @@ import androidx.cardview.widget.CardView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.PlanDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -39,7 +43,7 @@ class DashboardActivity : AppCompatActivity() {
         recentPlansContainer = findViewById(R.id.recent_plans_container)
 
         // Set welcome message with time-based greeting
-        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val greeting = when (hour) {
             in 0..11 -> "Good Morning! 👋"
             in 12..16 -> "Good Afternoon! 🌤️"
@@ -48,68 +52,66 @@ class DashboardActivity : AppCompatActivity() {
         }
         welcomeText.text = "$greeting\nPlan Smarter, Achieve More"
 
-        // Set placeholder stats
-        plansCount.text = "0"
-        goalsCount.text = "0"
-        streakCount.text = "0"
-
-        // Create Plan button with smooth transition
+        // Set click listeners
         createPlanButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
-        // View Plans with smooth transition
         viewPlansCard.setOnClickListener {
             val intent = Intent(this, PlanListActivity::class.java)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
-        // Empty state create button
         emptyCreateButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
-        // Load recent plans and stats
-        loadRecentPlans()
+        loadDashboardData()
     }
 
     override fun onResume() {
         super.onResume()
-        loadRecentPlans()
+        loadDashboardData()
     }
 
-    private fun loadRecentPlans() {
+    private fun loadDashboardData() {
         lifecycleScope.launch {
-            val plans = PlanDatabase.getDatabase(this@DashboardActivity)
-                .planDao()
-                .getAllPlans()
-                .collect { planList ->
-                    // Update stats
-                    plansCount.text = planList.size.toString()
+            val dao = PlanDatabase.getDatabase(this@DashboardActivity).planDao()
+            
+            // Get total plans count
+            val totalPlans = withContext(Dispatchers.IO) {
+                dao.getAllPlans().collect { list ->
+                    // Update Plans Created
+                    plansCount.text = list.size.toString()
                     
-                    // Update recent plans
+                    // Update Goals Achieved (completed plans)
+                    val completed = list.filter { it.isCompleted }.size
+                    goalsCount.text = completed.toString()
+                    
+                    // Update Day Streak
+                    streakCount.text = calculateStreak(list).toString()
+                    
+                    // Update Recent Plans
                     recentPlansContainer.removeAllViews()
                     
-                    if (planList.isEmpty()) {
-                        // Show empty state
+                    if (list.isEmpty()) {
                         val emptyView = layoutInflater.inflate(R.layout.item_empty_recent, recentPlansContainer, false)
                         recentPlansContainer.addView(emptyView)
                     } else {
-                        // Show up to 3 most recent plans
-                        val recentPlans = planList.take(3)
+                        val recentPlans = list.take(3)
                         for (plan in recentPlans) {
                             val planView = layoutInflater.inflate(R.layout.item_recent_plan, recentPlansContainer, false)
                             val goalText = planView.findViewById<TextView>(R.id.recent_plan_goal)
                             val dateText = planView.findViewById<TextView>(R.id.recent_plan_date)
                             
                             goalText.text = plan.goal
-                            val date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
-                                .format(java.util.Date(plan.createdAt))
+                            val date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                                .format(Date(plan.createdAt))
                             dateText.text = date
                             
                             planView.setOnClickListener {
@@ -123,6 +125,48 @@ class DashboardActivity : AppCompatActivity() {
                         }
                     }
                 }
+            }
         }
+    }
+
+    private fun calculateStreak(plans: List<com.planwise.app.data.Plan>): Int {
+        if (plans.isEmpty()) return 0
+        
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dates = plans.map { 
+            dateFormat.format(Date(it.createdAt))
+        }.distinct().sorted()
+        
+        if (dates.isEmpty()) return 0
+        
+        val today = dateFormat.format(Date())
+        var streak = 0
+        var currentDate = dateFormat.parse(today) ?: Date()
+        
+        if (!dates.contains(today)) {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.DAY_OF_YEAR, -1)
+            val yesterday = dateFormat.format(calendar.time)
+            
+            if (!dates.contains(yesterday)) {
+                return 0
+            }
+            currentDate = calendar.time
+        }
+        
+        while (true) {
+            val dateStr = dateFormat.format(currentDate)
+            if (dates.contains(dateStr)) {
+                streak++
+                val calendar = Calendar.getInstance()
+                calendar.time = currentDate
+                calendar.add(Calendar.DAY_OF_YEAR, -1)
+                currentDate = calendar.time
+            } else {
+                break
+            }
+        }
+        
+        return streak
     }
 }

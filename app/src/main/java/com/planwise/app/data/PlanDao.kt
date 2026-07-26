@@ -21,6 +21,12 @@ interface PlanDao {
     @Query("SELECT * FROM plans WHERE id = :planId")
     suspend fun getPlanById(planId: Long): Plan?
 
+    @Query("UPDATE plans SET isCompleted = :completed WHERE id = :planId")
+    suspend fun togglePlanCompletion(planId: Long, completed: Boolean)
+
+    @Query("SELECT COUNT(*) FROM plans WHERE isCompleted = 1")
+    suspend fun getCompletedCount(): Int
+
     @Delete
     suspend fun deletePlan(plan: Plan)
 

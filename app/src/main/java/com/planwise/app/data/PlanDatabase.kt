@@ -5,7 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import android.content.Context
 
-@Database(entities = [Plan::class], version = 1, exportSchema = false)
+@Database(entities = [Plan::class], version = 2, exportSchema = false)
 abstract class PlanDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
 
@@ -19,7 +19,8 @@ abstract class PlanDatabase : RoomDatabase() {
                     context.applicationContext,
                     PlanDatabase::class.java,
                     "plan_database"
-                ).build()
+                ).fallbackToDestructiveMigration() // This handles the schema change
+                 .build()
                 INSTANCE = instance
                 instance
             }

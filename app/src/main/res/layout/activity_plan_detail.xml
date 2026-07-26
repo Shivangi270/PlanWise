@@ -113,7 +113,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
-            app:cardElevation="4dp">
+            app:cardElevation="4dp"
+            android:layout_marginBottom="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -132,6 +133,18 @@
                     android:lineSpacingExtra="4dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <!-- Complete Button -->
+        <Button
+            android:id="@+id/detail_complete_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎯 Mark as Completed"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:textColor="#FFFFFF"
+            android:enabled="true" />
 
     </LinearLayout>
 </ScrollView>

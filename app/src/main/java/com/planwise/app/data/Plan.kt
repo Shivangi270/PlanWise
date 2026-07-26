@@ -14,5 +14,6 @@ data class Plan(
     val role: String,
     val topics: String,
     val planText: String,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val isCompleted: Boolean = false // New field
 )

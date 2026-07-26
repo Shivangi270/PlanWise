@@ -2,8 +2,10 @@ package com.planwise.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +21,7 @@ class PlanDetailActivity : AppCompatActivity() {
     private lateinit var planContentText: TextView
     private lateinit var dateText: TextView
     private lateinit var editButton: ImageView
+    private lateinit var completeButton: Button
 
     private var planId: Long = -1
 
@@ -32,6 +35,7 @@ class PlanDetailActivity : AppCompatActivity() {
         planContentText = findViewById(R.id.detail_plan_content)
         dateText = findViewById(R.id.detail_date_text)
         editButton = findViewById(R.id.detail_edit_button)
+        completeButton = findViewById(R.id.detail_complete_button)
 
         planId = intent.getLongExtra("plan_id", -1)
         if (planId != -1L) {
@@ -45,6 +49,10 @@ class PlanDetailActivity : AppCompatActivity() {
             intent.putExtra("plan_id", planId)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+
+        completeButton.setOnClickListener {
+            toggleCompletion()
         }
     }
 
@@ -70,8 +78,39 @@ class PlanDetailActivity : AppCompatActivity() {
                 val date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
                     .format(java.util.Date(plan.createdAt))
                 dateText.text = "📆 Created: $date"
+                
+                // Update complete button
+                if (plan.isCompleted) {
+                    completeButton.text = "✅ Completed!"
+                    completeButton.setBackgroundColor(getColor(android.R.color.holo_green_light))
+                    completeButton.isEnabled = false
+                } else {
+                    completeButton.text = "🎯 Mark as Completed"
+                    completeButton.setBackgroundColor(getColor(android.R.color.holo_blue_light))
+                    completeButton.isEnabled = true
+                }
             } else {
                 goalText.text = "Plan not found"
+            }
+        }
+    }
+
+    private fun toggleCompletion() {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    PlanDatabase.getDatabase(this@PlanDetailActivity)
+                        .planDao()
+                        .togglePlanCompletion(planId, true)
+                }
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@PlanDetailActivity, "🎉 Plan marked as completed!", Toast.LENGTH_SHORT).show()
+                    loadPlan(planId)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@PlanDetailActivity, "❌ Failed to update: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
