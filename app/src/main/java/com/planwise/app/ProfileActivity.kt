@@ -23,7 +23,6 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var plansCountText: TextView
     private lateinit var completedCountText: TextView
     private lateinit var streakCountText: TextView
-    private lateinit var memberSinceText: TextView
 
     private lateinit var darkModeCard: CardView
     private lateinit var notificationsCard: CardView
@@ -43,7 +42,6 @@ class ProfileActivity : AppCompatActivity() {
         plansCountText = findViewById(R.id.profile_plans_count)
         completedCountText = findViewById(R.id.profile_completed_count)
         streakCountText = findViewById(R.id.profile_streak_count)
-        memberSinceText = findViewById(R.id.profile_member_since)
 
         darkModeCard = findViewById(R.id.profile_dark_mode_card)
         notificationsCard = findViewById(R.id.profile_notifications_card)
@@ -51,7 +49,7 @@ class ProfileActivity : AppCompatActivity() {
         rateCard = findViewById(R.id.profile_rate_card)
         logoutCard = findViewById(R.id.profile_logout_card)
 
-        // Set user info (for now, using placeholder)
+        // Set user info (placeholder)
         userNameText.text = "PlanWise User"
         userEmailText.text = "user@planwise.app"
         avatarText.text = "PW"
@@ -90,15 +88,6 @@ class ProfileActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val dao = PlanDatabase.getDatabase(this@ProfileActivity).planDao()
             
-            val stats = withContext(Dispatchers.IO) {
-                val allPlans = dao.getAllPlans().collect { list ->
-                    // This collects, but we need a different approach for one-time read
-                }
-                // Better approach: use a direct query
-                null
-            }
-            
-            // Alternative: Use the Flow approach properly
             dao.getAllPlans().collect { planList ->
                 plansCountText.text = planList.size.toString()
                 val completed = planList.filter { it.isCompleted }.size

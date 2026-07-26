@@ -43,7 +43,7 @@
                         android:textColor="#FFFFFF"
                         android:textStyle="bold" />
 
-                    <!-- Profile Icon - Navigates to Profile -->
+                    <!-- Profile Icon -->
                     <ImageView
                         android:id="@+id/profile_icon"
                         android:layout_width="48dp"

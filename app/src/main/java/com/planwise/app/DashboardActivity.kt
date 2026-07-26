@@ -20,7 +20,6 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var welcomeText: TextView
     private lateinit var createPlanButton: CardView
     private lateinit var viewPlansCard: CardView
-    private lateinit var emptyCreateButton: Button
     private lateinit var plansCount: TextView
     private lateinit var goalsCount: TextView
     private lateinit var streakCount: TextView
@@ -36,7 +35,6 @@ class DashboardActivity : AppCompatActivity() {
         welcomeText = findViewById(R.id.welcome_text)
         createPlanButton = findViewById(R.id.create_plan_button)
         viewPlansCard = findViewById(R.id.view_plans_card)
-        emptyCreateButton = findViewById(R.id.empty_create_button)
         plansCount = findViewById(R.id.plans_count)
         goalsCount = findViewById(R.id.goals_count)
         streakCount = findViewById(R.id.streak_count)
@@ -62,12 +60,6 @@ class DashboardActivity : AppCompatActivity() {
 
         viewPlansCard.setOnClickListener {
             val intent = Intent(this, PlanListActivity::class.java)
-            startActivity(intent)
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-        }
-
-        emptyCreateButton.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
