@@ -1,17 +1,20 @@
 package com.planwise.app
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.PlanDatabase
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,6 +29,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private lateinit var darkModeCard: CardView
     private lateinit var notificationsCard: CardView
+    private lateinit var feedbackCard: CardView
     private lateinit var aboutCard: CardView
     private lateinit var rateCard: CardView
     private lateinit var logoutCard: CardView
@@ -45,6 +49,7 @@ class ProfileActivity : AppCompatActivity() {
 
         darkModeCard = findViewById(R.id.profile_dark_mode_card)
         notificationsCard = findViewById(R.id.profile_notifications_card)
+        feedbackCard = findViewById(R.id.profile_feedback_card)
         aboutCard = findViewById(R.id.profile_about_card)
         rateCard = findViewById(R.id.profile_rate_card)
         logoutCard = findViewById(R.id.profile_logout_card)
@@ -64,6 +69,10 @@ class ProfileActivity : AppCompatActivity() {
 
         notificationsCard.setOnClickListener {
             Toast.makeText(this, "🔔 Notifications coming soon!", Toast.LENGTH_SHORT).show()
+        }
+
+        feedbackCard.setOnClickListener {
+            sendFeedback()
         }
 
         aboutCard.setOnClickListener {
@@ -154,20 +163,64 @@ class ProfileActivity : AppCompatActivity() {
         return streak
     }
 
+    private fun sendFeedback() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("💬 Send Feedback")
+        builder.setMessage("We'd love to hear your thoughts! What can we improve?")
+
+        val input = EditText(this)
+        input.hint = "Type your feedback here..."
+        input.setPadding(32, 16, 32, 16)
+        builder.setView(input)
+
+        builder.setPositiveButton("Send") { _, _ ->
+            val feedback = input.text.toString().trim()
+            if (feedback.isNotEmpty()) {
+                sendEmail(feedback)
+            } else {
+                Toast.makeText(this, "Please write something!", Toast.LENGTH_SHORT).show()
+            }
+        }
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
+    private fun sendEmail(feedback: String) {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("your-email@example.com")) // Replace with your email
+            putExtra(Intent.EXTRA_SUBJECT, "PlanWise User Feedback")
+            putExtra(Intent.EXTRA_TEXT, """
+                $feedback
+
+                ---
+                App Version: ${BuildConfig.VERSION_NAME}
+                Device: ${Build.MANUFACTURER} ${Build.MODEL}
+                Android: ${Build.VERSION.RELEASE}
+            """.trimIndent())
+        }
+
+        try {
+            startActivity(Intent.createChooser(intent, "Send Feedback via Email"))
+        } catch (e: android.content.ActivityNotFoundException) {
+            Toast.makeText(this, "No email app found! Please email us at your-email@example.com", Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun showAboutDialog() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("About PlanWise")
             .setMessage("""
                 PlanWise v1.0.0
-                
+
                 PlanWise is an AI-powered planning assistant that helps you create, manage, and achieve your goals.
-                
+
                 Features:
                 • AI plan generation
                 • Plan management (save, edit, delete)
                 • Goal tracking
                 • Streak tracking
-                
+
                 Made with ❤️ for students and professionals.
             """.trimIndent())
             .setPositiveButton("OK", null)
@@ -175,7 +228,7 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun showLogoutDialog() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("Logout")
             .setMessage("Are you sure you want to logout?")
             .setPositiveButton("Logout") { _, _ ->

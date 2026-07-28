@@ -258,6 +258,41 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Send Feedback (NEW) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/profile_feedback_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="💬 Send Feedback"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="➜"
+                    android:textSize="20sp"
+                    android:textColor="@color/primary_blue" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- About -->
         <androidx.cardview.widget.CardView
             android:id="@+id/profile_about_card"
