@@ -186,6 +186,13 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun sendEmail(feedback: String) {
+        // Get app version name safely
+        val versionName = try {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        } catch (e: Exception) {
+            "1.0"
+        }
+        
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:")
             putExtra(Intent.EXTRA_EMAIL, arrayOf("your-email@example.com")) // Replace with your email
@@ -194,7 +201,7 @@ class ProfileActivity : AppCompatActivity() {
                 $feedback
 
                 ---
-                App Version: ${BuildConfig.VERSION_NAME}
+                App Version: $versionName
                 Device: ${Build.MANUFACTURER} ${Build.MODEL}
                 Android: ${Build.VERSION.RELEASE}
             """.trimIndent())
