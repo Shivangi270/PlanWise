@@ -41,7 +41,7 @@ class DashboardActivity : AppCompatActivity() {
         recentPlansContainer = findViewById(R.id.recent_plans_container)
         profileIcon = findViewById(R.id.profile_icon)
 
-        // Set welcome message with time-based greeting
+        // Set welcome message with time-based greeting - SHORTER TEXT
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val greeting = when (hour) {
             in 0..11 -> "Good Morning! 👋"
@@ -49,7 +49,7 @@ class DashboardActivity : AppCompatActivity() {
             in 17..20 -> "Good Evening! 🌅"
             else -> "Good Night! 🌙"
         }
-        welcomeText.text = "$greeting\nPlan Smarter, Achieve More"
+        welcomeText.text = greeting  // Removed the subtitle line
 
         // Set click listeners
         createPlanButton.setOnClickListener {

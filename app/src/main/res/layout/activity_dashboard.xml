@@ -24,9 +24,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/dashboard_header_gradient"
-                android:padding="20dp">
+                android:padding="16dp">
 
-                <!-- Greeting Row -->
+                <!-- Greeting Row - Smaller text -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -39,38 +39,29 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Good Morning! 👋"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:textColor="#FFFFFF"
                         android:textStyle="bold" />
 
                     <!-- Profile Icon -->
                     <ImageView
                         android:id="@+id/profile_icon"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/ic_profile"
-                        android:padding="8dp"
+                        android:padding="6dp"
                         android:clickable="true"
                         android:focusable="true"
                         android:background="@drawable/avatar_background"
                         android:contentDescription="Profile" />
                 </LinearLayout>
 
-                <!-- Subtitle -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Plan Smarter, Achieve More"
-                    android:textSize="14sp"
-                    android:textColor="#E0E0E0"
-                    android:layout_marginTop="4dp" />
-
                 <!-- Stats Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="12dp"
                     android:gravity="center">
 
                     <LinearLayout
@@ -85,21 +76,21 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textSize="24sp"
+                            android:textSize="20sp"
                             android:textColor="#FFFFFF"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Plans Created"
-                            android:textSize="12sp"
+                            android:text="Plans"
+                            android:textSize="11sp"
                             android:textColor="#E0E0E0" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
-                        android:layout_height="40dp"
+                        android:layout_height="32dp"
                         android:background="#80FFFFFF" />
 
                     <LinearLayout
@@ -114,21 +105,21 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textSize="24sp"
+                            android:textSize="20sp"
                             android:textColor="#FFFFFF"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Goals Achieved"
-                            android:textSize="12sp"
+                            android:text="Achieved"
+                            android:textSize="11sp"
                             android:textColor="#E0E0E0" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
-                        android:layout_height="40dp"
+                        android:layout_height="32dp"
                         android:background="#80FFFFFF" />
 
                     <LinearLayout
@@ -143,15 +134,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textSize="24sp"
+                            android:textSize="20sp"
                             android:textColor="#FFFFFF"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Day Streak"
-                            android:textSize="12sp"
+                            android:text="Streak"
+                            android:textSize="11sp"
                             android:textColor="#E0E0E0" />
                     </LinearLayout>
                 </LinearLayout>
