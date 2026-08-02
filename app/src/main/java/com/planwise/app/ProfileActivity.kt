@@ -14,7 +14,9 @@ import androidx.cardview.widget.CardView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.PlanDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -32,7 +34,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var feedbackCard: CardView
     private lateinit var aboutCard: CardView
     private lateinit var rateCard: CardView
-    private lateinit var logoutCard: CardView
+    private lateinit var clearPlansCard: CardView  // Changed from logoutCard
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -52,7 +54,7 @@ class ProfileActivity : AppCompatActivity() {
         feedbackCard = findViewById(R.id.profile_feedback_card)
         aboutCard = findViewById(R.id.profile_about_card)
         rateCard = findViewById(R.id.profile_rate_card)
-        logoutCard = findViewById(R.id.profile_logout_card)
+        clearPlansCard = findViewById(R.id.profile_clear_plans_card)  // Changed
 
         // Set user info (placeholder)
         userNameText.text = "PlanWise User"
@@ -83,8 +85,8 @@ class ProfileActivity : AppCompatActivity() {
             Toast.makeText(this, "⭐ Rate PlanWise on Google Play", Toast.LENGTH_SHORT).show()
         }
 
-        logoutCard.setOnClickListener {
-            showLogoutDialog()
+        clearPlansCard.setOnClickListener {
+            showClearPlansDialog()
         }
     }
 
@@ -186,7 +188,6 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun sendEmail(feedback: String) {
-        // Get app version name safely
         val versionName = try {
             packageManager.getPackageInfo(packageName, 0).versionName
         } catch (e: Exception) {
@@ -195,7 +196,7 @@ class ProfileActivity : AppCompatActivity() {
         
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:")
-            putExtra(Intent.EXTRA_EMAIL, arrayOf("your-email@example.com")) // Replace with your email
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("your-email@example.com"))
             putExtra(Intent.EXTRA_SUBJECT, "PlanWise User Feedback")
             putExtra(Intent.EXTRA_TEXT, """
                 $feedback
@@ -211,6 +212,37 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(intent, "Send Feedback via Email"))
         } catch (e: android.content.ActivityNotFoundException) {
             Toast.makeText(this, "No email app found! Please email us at your-email@example.com", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun showClearPlansDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("🗑️ Clear All Plans")
+            .setMessage("Are you sure you want to delete all your plans? This action cannot be undone.")
+            .setPositiveButton("Delete All") { _, _ ->
+                clearAllPlans()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun clearAllPlans() {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    PlanDatabase.getDatabase(this@ProfileActivity)
+                        .planDao()
+                        .deleteAllPlans()
+                }
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ProfileActivity, "✅ All plans cleared", Toast.LENGTH_SHORT).show()
+                    loadProfileStats()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ProfileActivity, "❌ Failed to clear plans: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -231,17 +263,6 @@ class ProfileActivity : AppCompatActivity() {
                 Made with ❤️ for students and professionals.
             """.trimIndent())
             .setPositiveButton("OK", null)
-            .show()
-    }
-
-    private fun showLogoutDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Logout")
-            .setMessage("Are you sure you want to logout?")
-            .setPositiveButton("Logout") { _, _ ->
-                Toast.makeText(this, "Logged out (feature coming soon)", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Cancel", null)
             .show()
     }
 

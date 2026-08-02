@@ -258,7 +258,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Send Feedback (NEW) -->
+        <!-- Send Feedback -->
         <androidx.cardview.widget.CardView
             android:id="@+id/profile_feedback_card"
             android:layout_width="match_parent"
@@ -374,16 +374,16 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Account"
+            android:text="Data"
             android:textSize="16sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="12dp" />
 
-        <!-- Logout -->
+        <!-- Clear All Plans (Replaces Logout) -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/profile_logout_card"
+            android:id="@+id/profile_clear_plans_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="12dp"
@@ -402,7 +402,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="🚪 Logout"
+                    android:text="🗑️ Clear All Plans"
                     android:textSize="16sp"
                     android:textColor="#EF4444"
                     android:textStyle="bold" />
