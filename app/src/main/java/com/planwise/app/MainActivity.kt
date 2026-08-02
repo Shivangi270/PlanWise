@@ -1,19 +1,20 @@
 package com.planwise.app
 
 import android.os.Bundle
+import android.text.Html
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.Plan
 import com.planwise.app.data.PlanDatabase
-import io.noties.markwon.Markwon
-import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import org.commonmark.parser.Parser
+import org.commonmark.renderer.html.HtmlRenderer
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
@@ -31,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var reviewButton: Button
     private lateinit var loadingText: TextView
     private lateinit var savePlanButton: Button
-    private lateinit var markwon: Markwon
 
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
     private var currentPlanText: String = ""
@@ -45,11 +45,6 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // Initialize Markwon
-        markwon = Markwon.builder(this)
-            .usePlugin(StrikethroughPlugin.create())
-            .build()
 
         goalInput = findViewById(R.id.goal_input)
         deadlineInput = findViewById(R.id.deadline_input)
@@ -77,6 +72,13 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    }
+
+    private fun markdownToHtml(markdown: String): String {
+        val parser = Parser.builder().build()
+        val renderer = HtmlRenderer.builder().build()
+        val document = parser.parse(markdown)
+        return renderer.render(document)
     }
 
     private fun generatePlan() {
@@ -108,7 +110,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 currentPlanText = plan
                 withContext(Dispatchers.Main) {
-                    markwon.setMarkdown(resultText, plan)
+                    // Render markdown with CommonMark
+                    val html = markdownToHtml(plan)
+                    resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                     reviewButton.visibility = android.view.View.VISIBLE
@@ -159,7 +163,9 @@ class MainActivity : AppCompatActivity() {
                     callReviewPlanAPI(currentPlanText, currentGoal)
                 }
                 withContext(Dispatchers.Main) {
-                    markwon.setMarkdown(resultText, "🔍 PLAN REVIEW\n\n$review")
+                    // Render markdown with CommonMark
+                    val html = markdownToHtml("🔍 PLAN REVIEW\n\n$review")
+                    resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
                     reviewButton.text = "🔄 Review Again"
                     reviewButton.isEnabled = true
                     loadingText.visibility = android.view.View.GONE
@@ -225,7 +231,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // API call functions
     private suspend fun callGeneratePlanAPI(
         goal: String,
         deadline: Int,

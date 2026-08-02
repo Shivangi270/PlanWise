@@ -2,6 +2,7 @@ package com.planwise.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Html
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -10,8 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.PlanDatabase
-import io.noties.markwon.Markwon
-import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import org.commonmark.parser.Parser
+import org.commonmark.renderer.html.HtmlRenderer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,7 +25,6 @@ class PlanDetailActivity : AppCompatActivity() {
     private lateinit var dateText: TextView
     private lateinit var editButton: ImageView
     private lateinit var completeButton: Button
-    private lateinit var markwon: Markwon
 
     private var planId: Long = -1
 
@@ -32,11 +32,6 @@ class PlanDetailActivity : AppCompatActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plan_detail)
-
-        // Initialize Markwon
-        markwon = Markwon.builder(this)
-            .usePlugin(StrikethroughPlugin.create())
-            .build()
 
         goalText = findViewById(R.id.detail_goal_text)
         detailsText = findViewById(R.id.detail_details_text)
@@ -71,6 +66,13 @@ class PlanDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun markdownToHtml(markdown: String): String {
+        val parser = Parser.builder().build()
+        val renderer = HtmlRenderer.builder().build()
+        val document = parser.parse(markdown)
+        return renderer.render(document)
+    }
+
     private fun loadPlan(planId: Long) {
         lifecycleScope.launch {
             val plan = withContext(Dispatchers.IO) {
@@ -82,7 +84,11 @@ class PlanDetailActivity : AppCompatActivity() {
             if (plan != null) {
                 goalText.text = "🎯 ${plan.goal}"
                 detailsText.text = "📅 ${plan.deadline} days • ⏰ ${plan.dailyHours} hrs/day • 👤 ${plan.role.capitalize()}"
-                markwon.setMarkdown(planContentText, plan.planText)
+                
+                // Render markdown with CommonMark
+                val html = markdownToHtml(plan.planText)
+                planContentText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
+                
                 val date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
                     .format(java.util.Date(plan.createdAt))
                 dateText.text = "📆 Created: $date"

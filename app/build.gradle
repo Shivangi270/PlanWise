@@ -68,9 +68,9 @@ dependencies {
     implementation 'androidx.room:room-ktx:2.6.1'
     kapt 'androidx.room:room-compiler:2.6.1'
     
-    // Markdown rendering
-    implementation 'io.noties.markwon:markwon:4.6.1'
-    implementation 'io.noties.markwon:ext-strikethrough:4.6.1'
+    // Markdown rendering - CommonMark
+    implementation 'org.commonmark:commonmark:0.21.0'
+    implementation 'org.commonmark:commonmark-android:0.21.0'
     
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
