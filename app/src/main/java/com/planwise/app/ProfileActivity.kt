@@ -1,5 +1,7 @@
 package com.planwise.app
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -34,12 +36,20 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var feedbackCard: CardView
     private lateinit var aboutCard: CardView
     private lateinit var rateCard: CardView
-    private lateinit var clearPlansCard: CardView  // Changed from logoutCard
+    private lateinit var clearPlansCard: CardView
+
+    // SharedPreferences for user name
+    private lateinit var sharedPrefs: SharedPreferences
+    private val PREFS_NAME = "PlanWisePrefs"
+    private val KEY_USER_NAME = "user_name"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+
+        // Initialize SharedPreferences
+        sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         // Initialize views
         avatarText = findViewById(R.id.profile_avatar_text)
@@ -54,12 +64,15 @@ class ProfileActivity : AppCompatActivity() {
         feedbackCard = findViewById(R.id.profile_feedback_card)
         aboutCard = findViewById(R.id.profile_about_card)
         rateCard = findViewById(R.id.profile_rate_card)
-        clearPlansCard = findViewById(R.id.profile_clear_plans_card)  // Changed
+        clearPlansCard = findViewById(R.id.profile_clear_plans_card)
 
-        // Set user info (placeholder)
-        userNameText.text = "PlanWise User"
+        // Load saved name or use default
+        val savedName = sharedPrefs.getString(KEY_USER_NAME, "PlanWise User")
+        userNameText.text = savedName
         userEmailText.text = "user@planwise.app"
-        avatarText.text = "PW"
+
+        // Set avatar initials from name
+        updateAvatarInitials(savedName ?: "PlanWise User")
 
         // Load stats
         loadProfileStats()
@@ -88,11 +101,50 @@ class ProfileActivity : AppCompatActivity() {
         clearPlansCard.setOnClickListener {
             showClearPlansDialog()
         }
+
+        // Make name clickable to edit
+        userNameText.setOnClickListener {
+            showEditNameDialog()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         loadProfileStats()
+    }
+
+    private fun updateAvatarInitials(name: String) {
+        val initials = name.split(" ")
+            .take(2)
+            .mapNotNull { it.firstOrNull()?.toString() }
+            .joinToString("")
+            .uppercase()
+        avatarText.text = if (initials.isNotEmpty()) initials else "PW"
+    }
+
+    private fun showEditNameDialog() {
+        val input = EditText(this)
+        input.setText(userNameText.text)
+        input.hint = "Enter your name"
+        input.setPadding(32, 16, 32, 16)
+
+        AlertDialog.Builder(this)
+            .setTitle("✏️ Edit Name")
+            .setMessage("Enter your name to personalize your profile")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val newName = input.text.toString().trim()
+                if (newName.isNotEmpty()) {
+                    sharedPrefs.edit().putString(KEY_USER_NAME, newName).apply()
+                    userNameText.text = newName
+                    updateAvatarInitials(newName)
+                    Toast.makeText(this, "✅ Name updated!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun loadProfileStats() {
@@ -266,13 +318,7 @@ class ProfileActivity : AppCompatActivity() {
             .show()
     }
 
-    //override fun onBackPressed() {
-        //super.onBackPressed()
-        //overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    //}
-
     override fun onBackPressed() {
-        // Just finish the activity - no custom transition
         super.onBackPressed()
     }
 }
