@@ -248,7 +248,7 @@ class ProfileActivity : AppCompatActivity() {
         
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:")
-            putExtra(Intent.EXTRA_EMAIL, arrayOf("your-email@example.com"))
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("planwise.app@gmail.com"))
             putExtra(Intent.EXTRA_SUBJECT, "PlanWise User Feedback")
             putExtra(Intent.EXTRA_TEXT, """
                 $feedback
