@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.PlanDatabase
+import io.noties.markwon.Markwon
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,6 +24,7 @@ class PlanDetailActivity : AppCompatActivity() {
     private lateinit var dateText: TextView
     private lateinit var editButton: ImageView
     private lateinit var completeButton: Button
+    private lateinit var markwon: Markwon
 
     private var planId: Long = -1
 
@@ -29,6 +32,11 @@ class PlanDetailActivity : AppCompatActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plan_detail)
+
+        // Initialize Markwon
+        markwon = Markwon.builder(this)
+            .usePlugin(StrikethroughPlugin.create())
+            .build()
 
         goalText = findViewById(R.id.detail_goal_text)
         detailsText = findViewById(R.id.detail_details_text)
@@ -74,12 +82,11 @@ class PlanDetailActivity : AppCompatActivity() {
             if (plan != null) {
                 goalText.text = "🎯 ${plan.goal}"
                 detailsText.text = "📅 ${plan.deadline} days • ⏰ ${plan.dailyHours} hrs/day • 👤 ${plan.role.capitalize()}"
-                planContentText.text = plan.planText
+                markwon.setMarkdown(planContentText, plan.planText)
                 val date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
                     .format(java.util.Date(plan.createdAt))
                 dateText.text = "📆 Created: $date"
                 
-                // Update complete button
                 if (plan.isCompleted) {
                     completeButton.text = "✅ Completed!"
                     completeButton.setBackgroundColor(getColor(android.R.color.holo_green_light))

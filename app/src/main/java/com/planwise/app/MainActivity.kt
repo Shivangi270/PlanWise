@@ -7,6 +7,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.planwise.app.data.Plan
 import com.planwise.app.data.PlanDatabase
+import io.noties.markwon.Markwon
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
@@ -29,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var reviewButton: Button
     private lateinit var loadingText: TextView
     private lateinit var savePlanButton: Button
+    private lateinit var markwon: Markwon
 
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
     private var currentPlanText: String = ""
@@ -42,6 +45,11 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize Markwon
+        markwon = Markwon.builder(this)
+            .usePlugin(StrikethroughPlugin.create())
+            .build()
 
         goalInput = findViewById(R.id.goal_input)
         deadlineInput = findViewById(R.id.deadline_input)
@@ -100,7 +108,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 currentPlanText = plan
                 withContext(Dispatchers.Main) {
-                    resultText.text = plan
+                    markwon.setMarkdown(resultText, plan)
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                     reviewButton.visibility = android.view.View.VISIBLE
@@ -151,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                     callReviewPlanAPI(currentPlanText, currentGoal)
                 }
                 withContext(Dispatchers.Main) {
-                    resultText.text = "🔍 PLAN REVIEW\n\n$review"
+                    markwon.setMarkdown(resultText, "🔍 PLAN REVIEW\n\n$review")
                     reviewButton.text = "🔄 Review Again"
                     reviewButton.isEnabled = true
                     loadingText.visibility = android.view.View.GONE

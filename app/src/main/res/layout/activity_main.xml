@@ -209,22 +209,28 @@
             app:cardElevation="4dp"
             android:layout_marginBottom="12dp">
 
-            <LinearLayout
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@color/surface_white"
-                android:padding="16dp">
+                android:maxHeight="400dp">
 
-                <TextView
-                    android:id="@+id/result_text"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Click 'Generate Plan' to create your personalized plan!"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_primary"
-                    android:lineSpacingExtra="4dp" />
-            </LinearLayout>
+                    android:orientation="vertical"
+                    android:background="@color/surface_white"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/result_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Click 'Generate Plan' to create your personalized plan!"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </ScrollView>
         </androidx.cardview.widget.CardView>
 
         <!-- Save Plan Button -->
