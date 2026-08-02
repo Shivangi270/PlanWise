@@ -70,7 +70,7 @@ dependencies {
     
     // Markdown rendering - CommonMark
     implementation 'org.commonmark:commonmark:0.21.0'
-    implementation 'org.commonmark:commonmark-android:0.21.0'
+    //implementation 'org.commonmark:commonmark-android:0.21.0'
     
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
