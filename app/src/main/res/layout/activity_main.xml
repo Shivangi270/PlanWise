@@ -23,7 +23,7 @@
             android:onClick="onBackPressed"
             android:layout_marginBottom="8dp" />
 
-        <!-- Header with Gradient Background -->
+        <!-- Header -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -101,7 +101,7 @@
                 android:id="@+id/goal_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/goal_hint"
+                android:hint="e.g., Complete Physics syllabus"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -125,7 +125,7 @@
                 android:id="@+id/deadline_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/deadline_hint"
+                android:hint="Number of days"
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -149,7 +149,7 @@
                 android:id="@+id/hours_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hours_hint"
+                android:hint="Hours per day"
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -177,24 +177,12 @@
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Generate Button -->
+        <!-- Generate Button (ONLY ONE) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/generate_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/generate_plan"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
-            android:padding="16dp"
-            android:backgroundTint="@color/primary_blue"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Generate Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/generate_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/generate_plan"
+            android:text="🚀 Generate Plan"
             android:textSize="16sp"
             app:cornerRadius="12dp"
             android:padding="16dp"
@@ -217,19 +205,7 @@
             android:id="@+id/loading_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/loading"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:visibility="gone"
-            android:layout_marginBottom="12dp"
-            android:layout_gravity="center" />
-
-        <!-- Loading Text -->
-        <TextView
-            android:id="@+id/loading_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/loading"
+            android:text="⏳ Generating your plan..."
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:visibility="gone"
@@ -286,7 +262,7 @@
             android:id="@+id/review_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/review_plan"
+            android:text="🔍 Review My Plan"
             android:textSize="16sp"
             app:cornerRadius="12dp"
             android:padding="16dp"
