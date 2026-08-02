@@ -1,5 +1,7 @@
 package com.planwise.app
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Html
 import android.widget.*
@@ -19,6 +21,7 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var reviewButton: Button
     private lateinit var loadingText: TextView
     private lateinit var savePlanButton: Button
+    private lateinit var limitWarningText: TextView
 
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
     private var currentPlanText: String = ""
@@ -41,10 +45,20 @@ class MainActivity : AppCompatActivity() {
     private var currentRole: String = ""
     private var currentTopics: String = ""
 
+    // SharedPreferences for daily limit
+    private lateinit var sharedPrefs: SharedPreferences
+    private val PREFS_NAME = "PlanWisePrefs"
+    private val KEY_LAST_GEN_DATE = "last_gen_date"
+    private val KEY_GEN_COUNT = "gen_count"
+    private val DAILY_LIMIT = 3  // Maximum plans per day
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize SharedPreferences
+        sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         goalInput = findViewById(R.id.goal_input)
         deadlineInput = findViewById(R.id.deadline_input)
@@ -56,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         reviewButton = findViewById(R.id.review_button)
         loadingText = findViewById(R.id.loading_text)
         savePlanButton = findViewById(R.id.save_plan_button)
+        limitWarningText = findViewById(R.id.limit_warning_text)
 
         val roles = arrayOf("Student", "Professional")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
@@ -67,15 +82,12 @@ class MainActivity : AppCompatActivity() {
         savePlanButton.setOnClickListener { savePlanToDatabase() }
         
         savePlanButton.visibility = android.view.View.GONE
+        
+        // Check and update daily limit status
+        updateLimitStatus()
     }
 
-    //override fun onBackPressed() {
-        //super.onBackPressed()
-        //overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    //}
-
     override fun onBackPressed() {
-        // Just finish the activity - no custom transition
         super.onBackPressed()
     }
 
@@ -86,7 +98,75 @@ class MainActivity : AppCompatActivity() {
         return renderer.render(document)
     }
 
+    // Check if the user has reached the daily limit
+    private fun canGeneratePlan(): Boolean {
+        val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+        val year = Calendar.getInstance().get(Calendar.YEAR)
+        val todayKey = "$year-$today"
+        
+        val lastGenDate = sharedPrefs.getString(KEY_LAST_GEN_DATE, "")
+        val genCount = sharedPrefs.getInt(KEY_GEN_COUNT, 0)
+        
+        // If it's a new day, reset the counter
+        if (lastGenDate != todayKey) {
+            sharedPrefs.edit().apply {
+                putString(KEY_LAST_GEN_DATE, todayKey)
+                putInt(KEY_GEN_COUNT, 0)
+                apply()
+            }
+            return true
+        }
+        
+        return genCount < DAILY_LIMIT
+    }
+
+    // Increment the generation counter
+    private fun incrementGenerationCount() {
+        val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+        val year = Calendar.getInstance().get(Calendar.YEAR)
+        val todayKey = "$year-$today"
+        
+        val currentCount = sharedPrefs.getInt(KEY_GEN_COUNT, 0)
+        sharedPrefs.edit().apply {
+            putString(KEY_LAST_GEN_DATE, todayKey)
+            putInt(KEY_GEN_COUNT, currentCount + 1)
+            apply()
+        }
+        updateLimitStatus()
+    }
+
+    // Update the UI to show remaining generations
+    private fun updateLimitStatus() {
+        val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+        val year = Calendar.getInstance().get(Calendar.YEAR)
+        val todayKey = "$year-$today"
+        
+        val lastGenDate = sharedPrefs.getString(KEY_LAST_GEN_DATE, "")
+        val genCount = if (lastGenDate == todayKey) {
+            sharedPrefs.getInt(KEY_GEN_COUNT, 0)
+        } else {
+            0
+        }
+        
+        val remaining = DAILY_LIMIT - genCount
+        if (remaining > 0) {
+            limitWarningText.text = "📊 $remaining of $DAILY_LIMIT plan generations remaining today"
+            limitWarningText.setTextColor(getColor(android.R.color.holo_green_dark))
+        } else {
+            limitWarningText.text = "⚠️ Daily limit reached! Come back tomorrow for more plans."
+            limitWarningText.setTextColor(getColor(android.R.color.holo_red_dark))
+            generateButton.isEnabled = false
+        }
+    }
+
     private fun generatePlan() {
+        // Check if user has reached the daily limit
+        if (!canGeneratePlan()) {
+            Toast.makeText(this, "Daily plan limit reached! Come back tomorrow.", Toast.LENGTH_LONG).show()
+            updateLimitStatus()
+            return
+        }
+
         currentGoal = goalInput.text.toString().trim()
         val deadlineStr = deadlineInput.text.toString().trim()
         val hoursStr = hoursInput.text.toString().trim()
@@ -114,8 +194,11 @@ class MainActivity : AppCompatActivity() {
                     callGeneratePlanAPI(currentGoal, currentDeadline, currentHours, currentRole, currentTopics)
                 }
                 currentPlanText = plan
+                
+                // Increment the generation count
+                incrementGenerationCount()
+                
                 withContext(Dispatchers.Main) {
-                    // Render markdown with CommonMark
                     val html = markdownToHtml(plan)
                     resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
                     loadingText.visibility = android.view.View.GONE
@@ -124,6 +207,7 @@ class MainActivity : AppCompatActivity() {
                     reviewButton.text = "🔍 Review My Plan"
                     savePlanButton.visibility = android.view.View.VISIBLE
                     Toast.makeText(this@MainActivity, "✅ Plan generated!", Toast.LENGTH_SHORT).show()
+                    updateLimitStatus()
                 }
             } catch (e: TimeoutCancellationException) {
                 withContext(Dispatchers.Main) {
@@ -168,7 +252,6 @@ class MainActivity : AppCompatActivity() {
                     callReviewPlanAPI(currentPlanText, currentGoal)
                 }
                 withContext(Dispatchers.Main) {
-                    // Render markdown with CommonMark
                     val html = markdownToHtml("🔍 PLAN REVIEW\n\n$review")
                     resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
                     reviewButton.text = "🔄 Review Again"

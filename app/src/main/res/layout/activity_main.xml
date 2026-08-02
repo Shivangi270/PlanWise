@@ -189,6 +189,41 @@
             android:backgroundTint="@color/primary_blue"
             android:layout_marginBottom="12dp" />
 
+        <!-- Generate Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/generate_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/generate_plan"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:padding="16dp"
+            android:backgroundTint="@color/primary_blue"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Daily Limit Warning -->
+        <TextView
+            android:id="@+id/limit_warning_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📊 3 of 3 plan generations remaining today"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Loading Text -->
+        <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/loading"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp"
+            android:layout_gravity="center" />
+
         <!-- Loading Text -->
         <TextView
             android:id="@+id/loading_text"
