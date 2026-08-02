@@ -78,6 +78,11 @@ class DashboardActivity : AppCompatActivity() {
         loadDashboardData()
     }
 
+    override fun onBackPressed() {
+        // Just finish the activity - no custom transition
+        super.onBackPressed()
+    }
+
     private fun loadDashboardData() {
         lifecycleScope.launch {
             val dao = PlanDatabase.getDatabase(this@DashboardActivity).planDao()

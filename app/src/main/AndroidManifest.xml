@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -27,30 +28,35 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
+            android:parentActivityName=".DashboardActivity"
             android:theme="@style/Theme.PlanWise" />
         
         <!-- Plan List Activity -->
         <activity
             android:name=".PlanListActivity"
             android:exported="false"
+            android:parentActivityName=".DashboardActivity"
             android:theme="@style/Theme.PlanWise" />
         
         <!-- Plan Detail Activity -->
         <activity
             android:name=".PlanDetailActivity"
             android:exported="false"
+            android:parentActivityName=".PlanListActivity"
             android:theme="@style/Theme.PlanWise" />
         
         <!-- Plan Edit Activity -->
         <activity
             android:name=".PlanEditActivity"
             android:exported="false"
+            android:parentActivityName=".PlanDetailActivity"
             android:theme="@style/Theme.PlanWise" />
 
         <!-- Profile Activity -->
         <activity
             android:name=".ProfileActivity"
             android:exported="false"
+            android:parentActivityName=".DashboardActivity"
             android:theme="@style/Theme.PlanWise" />
         
     </application>

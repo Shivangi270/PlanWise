@@ -110,8 +110,13 @@ class PlanListActivity : AppCompatActivity() {
         }
     }
 
+    //override fun onBackPressed() {
+        //super.onBackPressed()
+        //overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    //}
+
     override fun onBackPressed() {
+        // Just finish the activity - no custom transition
         super.onBackPressed()
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }
