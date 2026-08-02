@@ -84,7 +84,7 @@ class PlanEditActivity : AppCompatActivity() {
                 hoursInput.setText(plan.dailyHours.toString())
                 topicsInput.setText(plan.topics)
                 roleInput.setText(plan.role.capitalize(), false)
-                planContentInput.setText(plan.planText) // Show the actual generated plan
+                planContentInput.setText(plan.planText)
             } ?: run {
                 Toast.makeText(this@PlanEditActivity, "Plan not found", Toast.LENGTH_SHORT).show()
                 finish()
@@ -162,9 +162,7 @@ class PlanEditActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // Use mock generation for now (since backend may not be working)
-                // You can replace this with real API call when backend is ready
-                val newPlanText = generateMockPlan(goal, deadlineStr.toInt(), hoursStr.toInt(), role, topics)
+                val newPlanText = callGeneratePlanAPI(goal, deadlineStr.toInt(), hoursStr.toInt(), role, topics)
                 
                 val updatedPlan = Plan(
                     id = planId,
@@ -199,40 +197,50 @@ class PlanEditActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateMockPlan(goal: String, deadline: Int, dailyHours: Int, role: String, topics: String): String {
-        return """
-📋 MOCK PLAN: $goal
+    private suspend fun callGeneratePlanAPI(
+        goal: String,
+        deadline: Int,
+        dailyHours: Int,
+        role: String,
+        topics: String
+    ): String = withContext(Dispatchers.IO) {
+        val url = URL("$BACKEND_URL/generate-plan")
+        val connection = url.openConnection() as HttpURLConnection
+        try {
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 15000
+            connection.readTimeout = 30000
 
-⏰ Timeline: $deadline days
-📅 Daily Hours: $dailyHours
-👤 Role: ${role.capitalize()}
-📚 Topics: ${if (topics.isNotEmpty()) topics else "Not specified"}
+            val jsonBody = JSONObject().apply {
+                put("goal", goal)
+                put("deadline", deadline)
+                put("daily_hours", dailyHours)
+                put("role", role)
+                put("topics", topics)
+            }
 
-📆 WEEK 1:
-• Monday: Topic 1 - 2 hours
-• Tuesday: Topic 2 - 2 hours
-• Wednesday: Topic 3 - 2 hours
-• Thursday: Topic 4 - 2 hours
-• Friday: Topic 5 - 2 hours
-• Saturday: Revision - 2 hours
-• Sunday: Rest
+            connection.outputStream.use { os ->
+                os.write(jsonBody.toString().toByteArray())
+            }
 
-📆 WEEK 2:
-• Monday: Topic 6 - 2 hours
-• Tuesday: Topic 7 - 2 hours
-• Wednesday: Topic 8 - 2 hours
-• Thursday: Topic 9 - 2 hours
-• Friday: Topic 10 - 2 hours
-• Saturday: Revision - 2 hours
-• Sunday: Rest
+            val responseCode = connection.responseCode
+            val response = if (responseCode in 200..299) {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
+            }
 
-💡 TIPS:
-1. Start with the most difficult topic first
-2. Take a 5-minute break every 25 minutes
-3. Review what you learned at the end of each day
-
-✨ Plan regenerated on ${java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()).format(java.util.Date())}
-""".trimIndent()
+            if (responseCode in 200..299) {
+                val jsonResponse = JSONObject(response)
+                jsonResponse.getString("plan")
+            } else {
+                throw Exception("Server error $responseCode")
+            }
+        } finally {
+            connection.disconnect()
+        }
     }
 
     override fun onBackPressed() {

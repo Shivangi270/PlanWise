@@ -66,22 +66,29 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- ScrollView added here to fix truncation -->
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+            android:layout_height="250dp"
+            android:layout_marginBottom="20dp">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_plan_content"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minLines="12"
-                android:maxLines="20"
-                android:gravity="start|top"
-                android:hint="Edit the plan content here..."
-                android:inputType="textMultiLine" />
-        </com.google.android.material.textfield.TextInputLayout>
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_plan_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minLines="8"
+                    android:maxLines="20"
+                    android:gravity="start|top"
+                    android:hint="Edit the plan content here..."
+                    android:inputType="textMultiLine"
+                    android:scrollbars="vertical" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </ScrollView>
 
         <!-- SECTION 2: Regenerate with New Inputs -->
         <TextView
