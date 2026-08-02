@@ -189,18 +189,6 @@
             android:backgroundTint="@color/primary_blue"
             android:layout_marginBottom="12dp" />
 
-        <!-- Mock Generate Button (Testing Only) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/mock_generate_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🧪 Generate Mock Plan (Test)"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
-            android:padding="16dp"
-            android:backgroundTint="#FF9800"
-            android:layout_marginBottom="12dp" />
-
         <!-- Loading Text -->
         <TextView
             android:id="@+id/loading_text"
