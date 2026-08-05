@@ -44,7 +44,7 @@
                 android:contentDescription="Edit plan" />
         </LinearLayout>
 
-        <!-- Header with Gradient Background -->
+        <!-- Header -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -130,7 +130,7 @@
                     android:text="Plan content will appear here..."
                     android:textSize="14sp"
                     android:textColor="@color/text_primary"
-                    android:lineSpacingExtra="4dp" />
+                    android:lineSpacingExtra="6dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

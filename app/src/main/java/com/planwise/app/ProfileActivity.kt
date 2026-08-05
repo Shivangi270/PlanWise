@@ -248,7 +248,7 @@ class ProfileActivity : AppCompatActivity() {
         
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:")
-            putExtra(Intent.EXTRA_EMAIL, arrayOf("planwise.app@gmail.com"))
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("planwise.app27@gmail.com"))
             putExtra(Intent.EXTRA_SUBJECT, "PlanWise User Feedback")
             putExtra(Intent.EXTRA_TEXT, """
                 $feedback
@@ -263,7 +263,7 @@ class ProfileActivity : AppCompatActivity() {
         try {
             startActivity(Intent.createChooser(intent, "Send Feedback via Email"))
         } catch (e: android.content.ActivityNotFoundException) {
-            Toast.makeText(this, "No email app found! Please email us at your-email@example.com", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "No email app found! Please email us at planwise.app27@gmail.com", Toast.LENGTH_LONG).show()
         }
     }
 

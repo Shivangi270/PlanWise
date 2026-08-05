@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     private val PREFS_NAME = "PlanWisePrefs"
     private val KEY_LAST_GEN_DATE = "last_gen_date"
     private val KEY_GEN_COUNT = "gen_count"
-    private val DAILY_LIMIT = 3  // Maximum plans per day
+    private val DAILY_LIMIT = 3
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -80,9 +80,9 @@ class MainActivity : AppCompatActivity() {
         generateButton.setOnClickListener { generatePlan() }
         reviewButton.setOnClickListener { reviewPlan() }
         savePlanButton.setOnClickListener { savePlanToDatabase() }
-        
+
         savePlanButton.visibility = android.view.View.GONE
-        
+
         // Check and update daily limit status
         updateLimitStatus()
     }
@@ -95,19 +95,19 @@ class MainActivity : AppCompatActivity() {
         val parser = Parser.builder().build()
         val renderer = HtmlRenderer.builder().build()
         val document = parser.parse(markdown)
-        return renderer.render(document)
+        val html = renderer.render(document)
+        // Preserve line breaks in HTML
+        return html.replace("\n", "<br>")
     }
 
-    // Check if the user has reached the daily limit
     private fun canGeneratePlan(): Boolean {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         val year = Calendar.getInstance().get(Calendar.YEAR)
         val todayKey = "$year-$today"
-        
+
         val lastGenDate = sharedPrefs.getString(KEY_LAST_GEN_DATE, "")
         val genCount = sharedPrefs.getInt(KEY_GEN_COUNT, 0)
-        
-        // If it's a new day, reset the counter
+
         if (lastGenDate != todayKey) {
             sharedPrefs.edit().apply {
                 putString(KEY_LAST_GEN_DATE, todayKey)
@@ -116,16 +116,15 @@ class MainActivity : AppCompatActivity() {
             }
             return true
         }
-        
+
         return genCount < DAILY_LIMIT
     }
 
-    // Increment the generation counter
     private fun incrementGenerationCount() {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         val year = Calendar.getInstance().get(Calendar.YEAR)
         val todayKey = "$year-$today"
-        
+
         val currentCount = sharedPrefs.getInt(KEY_GEN_COUNT, 0)
         sharedPrefs.edit().apply {
             putString(KEY_LAST_GEN_DATE, todayKey)
@@ -135,32 +134,31 @@ class MainActivity : AppCompatActivity() {
         updateLimitStatus()
     }
 
-    // Update the UI to show remaining generations
     private fun updateLimitStatus() {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         val year = Calendar.getInstance().get(Calendar.YEAR)
         val todayKey = "$year-$today"
-        
+
         val lastGenDate = sharedPrefs.getString(KEY_LAST_GEN_DATE, "")
         val genCount = if (lastGenDate == todayKey) {
             sharedPrefs.getInt(KEY_GEN_COUNT, 0)
         } else {
             0
         }
-        
+
         val remaining = DAILY_LIMIT - genCount
         if (remaining > 0) {
             limitWarningText.text = "📊 $remaining of $DAILY_LIMIT plan generations remaining today"
             limitWarningText.setTextColor(getColor(android.R.color.holo_green_dark))
+            generateButton.isEnabled = true
         } else {
-            limitWarningText.text = "⚠️ Daily limit reached! Come back tomorrow for more plans."
+            limitWarningText.text = "⚠️ Daily limit reached! Come back tomorrow."
             limitWarningText.setTextColor(getColor(android.R.color.holo_red_dark))
             generateButton.isEnabled = false
         }
     }
 
     private fun generatePlan() {
-        // Check if user has reached the daily limit
         if (!canGeneratePlan()) {
             Toast.makeText(this, "Daily plan limit reached! Come back tomorrow.", Toast.LENGTH_LONG).show()
             updateLimitStatus()
@@ -194,10 +192,9 @@ class MainActivity : AppCompatActivity() {
                     callGeneratePlanAPI(currentGoal, currentDeadline, currentHours, currentRole, currentTopics)
                 }
                 currentPlanText = plan
-                
-                // Increment the generation count
+
                 incrementGenerationCount()
-                
+
                 withContext(Dispatchers.Main) {
                     val html = markdownToHtml(plan)
                     resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
@@ -296,13 +293,13 @@ class MainActivity : AppCompatActivity() {
                     planText = currentPlanText,
                     createdAt = System.currentTimeMillis()
                 )
-                
+
                 withContext(Dispatchers.IO) {
                     PlanDatabase.getDatabase(this@MainActivity)
                         .planDao()
                         .insertPlan(plan)
                 }
-                
+
                 withContext(Dispatchers.Main) {
                     loadingText.visibility = android.view.View.GONE
                     savePlanButton.isEnabled = true

@@ -18,7 +18,7 @@
     <!-- Splash screen theme for Android 12+ -->
     <style name="Theme.PlanWise.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/primary_blue</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo_white</item>
         <item name="windowSplashScreenIconBackgroundColor">@color/primary_blue</item>
         <item name="postSplashScreenTheme">@style/Theme.PlanWise</item>
         <item name="android:windowActionBar">false</item>

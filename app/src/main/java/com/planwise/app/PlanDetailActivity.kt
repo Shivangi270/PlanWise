@@ -70,7 +70,9 @@ class PlanDetailActivity : AppCompatActivity() {
         val parser = Parser.builder().build()
         val renderer = HtmlRenderer.builder().build()
         val document = parser.parse(markdown)
-        return renderer.render(document)
+        val html = renderer.render(document)
+        // Preserve line breaks in HTML
+        return html.replace("\n", "<br>")
     }
 
     private fun loadPlan(planId: Long) {
@@ -84,15 +86,14 @@ class PlanDetailActivity : AppCompatActivity() {
             if (plan != null) {
                 goalText.text = "🎯 ${plan.goal}"
                 detailsText.text = "📅 ${plan.deadline} days • ⏰ ${plan.dailyHours} hrs/day • 👤 ${plan.role.capitalize()}"
-                
-                // Render markdown with CommonMark
+
                 val html = markdownToHtml(plan.planText)
                 planContentText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
-                
+
                 val date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
                     .format(java.util.Date(plan.createdAt))
                 dateText.text = "📆 Created: $date"
-                
+
                 if (plan.isCompleted) {
                     completeButton.text = "✅ Completed!"
                     completeButton.setBackgroundColor(getColor(android.R.color.holo_green_light))
@@ -128,13 +129,7 @@ class PlanDetailActivity : AppCompatActivity() {
         }
     }
 
-    //override fun onBackPressed() {
-        //super.onBackPressed()
-        //overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    //}
-
     override fun onBackPressed() {
-        // Just finish the activity - no custom transition
         super.onBackPressed()
     }
 }

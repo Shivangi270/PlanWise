@@ -177,7 +177,7 @@
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Generate Button (ONLY ONE) -->
+        <!-- Generate Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/generate_button"
             android:layout_width="match_parent"
@@ -239,7 +239,7 @@
                         android:text="Click 'Generate Plan' to create your personalized plan!"
                         android:textSize="14sp"
                         android:textColor="@color/text_primary"
-                        android:lineSpacingExtra="4dp" />
+                        android:lineSpacingExtra="6dp" />
                 </LinearLayout>
             </ScrollView>
         </androidx.cardview.widget.CardView>
