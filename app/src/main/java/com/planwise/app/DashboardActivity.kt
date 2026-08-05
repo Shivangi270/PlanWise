@@ -41,7 +41,7 @@ class DashboardActivity : AppCompatActivity() {
         recentPlansContainer = findViewById(R.id.recent_plans_container)
         profileIcon = findViewById(R.id.profile_icon)
 
-        // Set welcome message with time-based greeting - SHORTER TEXT
+        // Set welcome message
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val greeting = when (hour) {
             in 0..11 -> "Good Morning! 👋"
@@ -49,23 +49,26 @@ class DashboardActivity : AppCompatActivity() {
             in 17..20 -> "Good Evening! 🌅"
             else -> "Good Night! 🌙"
         }
-        welcomeText.text = greeting  // Removed the subtitle line
+        welcomeText.text = greeting
 
-        // Set click listeners
+        // Set click listeners with FLAG_ACTIVITY_CLEAR_TOP to prevent duplicate activities
         createPlanButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         viewPlansCard.setOnClickListener {
             val intent = Intent(this, PlanListActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         profileIcon.setOnClickListener {
             val intent = Intent(this, ProfileActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
@@ -79,8 +82,12 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // Just finish the activity - no custom transition
-        super.onBackPressed()
+        // If this is the root activity, just move to background
+        if (isTaskRoot) {
+            moveTaskToBack(true)
+        } else {
+            super.onBackPressed()
+        }
     }
 
     private fun loadDashboardData() {
@@ -88,17 +95,11 @@ class DashboardActivity : AppCompatActivity() {
             val dao = PlanDatabase.getDatabase(this@DashboardActivity).planDao()
             
             dao.getAllPlans().collect { planList ->
-                // Update Plans Created
                 plansCount.text = planList.size.toString()
-
-                // Update Goals Achieved
                 val completed = planList.filter { it.isCompleted }.size
                 goalsCount.text = completed.toString()
-
-                // Update Day Streak
                 streakCount.text = calculateStreak(planList).toString()
 
-                // Update Recent Plans
                 recentPlansContainer.removeAllViews()
                 
                 if (planList.isEmpty()) {
@@ -118,6 +119,7 @@ class DashboardActivity : AppCompatActivity() {
                         
                         planView.setOnClickListener {
                             val intent = Intent(this@DashboardActivity, PlanDetailActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                             intent.putExtra("plan_id", plan.id)
                             startActivity(intent)
                             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)

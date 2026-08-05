@@ -88,7 +88,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
+        // Just finish this activity and let the system handle the back stack
+        finish()
+        // Don't add any custom transition here - let the system handle it
     }
 
     private fun markdownToHtml(markdown: String): String {
