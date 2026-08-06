@@ -66,12 +66,13 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <!-- NestedScrollView for smooth scrolling -->
+        <!-- NestedScrollView with wrap_content (no fixed height) -->
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            android:fillViewport="true">
+            android:fillViewport="true"
+            android:minHeight="200dp">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -84,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:minHeight="180dp"
                     android:minLines="8"
-                    android:maxLines="20"
+                    android:maxLines="100"
                     android:gravity="start|top"
                     android:hint="Edit the plan content here..."
                     android:inputType="textMultiLine"
