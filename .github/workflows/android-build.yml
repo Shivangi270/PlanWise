@@ -40,17 +40,26 @@ jobs:
     - name: Build Debug APK
       run: ./gradlew assembleDebug --no-daemon
 
-    - name: Build Debug AAB
-      run: ./gradlew bundleDebug --no-daemon
+    - name: Decode Keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > planwise-upload-key.jks
 
-    - name: Upload APK
+    - name: Build Signed Release AAB
+      env:
+        KEYSTORE_FILE: planwise-upload-key.jks
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      run: ./gradlew bundleRelease --no-daemon
+
+    - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
         path: app/build/outputs/apk/debug/app-debug.apk
 
-    - name: Upload AAB
+    - name: Upload Signed Release AAB
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug-aab
-        path: app/build/outputs/bundle/debug/app-debug.aab
+        name: app-release-aab
+        path: app/build/outputs/bundle/release/app-release.aab
