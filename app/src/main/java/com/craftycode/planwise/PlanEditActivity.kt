@@ -1,12 +1,12 @@
-package com.planwise.app
+package com.craftycode.planwise
 
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.planwise.app.data.Plan
-import com.planwise.app.data.PlanDatabase
+import com.craftycode.planwise.data.Plan
+import com.craftycode.planwise.data.PlanDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

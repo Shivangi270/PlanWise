@@ -1,4 +1,4 @@
-package com.planwise.app
+package com.craftycode.planwise
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.planwise.app.data.PlanDatabase
+import com.craftycode.planwise.data.PlanDatabase
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*

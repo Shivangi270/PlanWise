@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.planwise.app'
+    namespace 'com.craftycode.planwise'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.planwise.app"
+        applicationId "com.craftycode.planwise"
         minSdk 21
         targetSdk 34
         versionCode 1

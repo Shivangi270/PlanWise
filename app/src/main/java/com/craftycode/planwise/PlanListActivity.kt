@@ -1,4 +1,4 @@
-package com.planwise.app
+package com.craftycode.planwise
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,8 +10,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.planwise.app.data.Plan
-import com.planwise.app.data.PlanDatabase
+import com.craftycode.planwise.data.Plan
+import com.craftycode.planwise.data.PlanDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -1,4 +1,4 @@
-package com.planwise.app
+package com.craftycode.planwise
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.planwise.app.data.PlanDatabase
+import com.craftycode.planwise.data.PlanDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

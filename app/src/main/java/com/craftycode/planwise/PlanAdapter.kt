@@ -1,11 +1,11 @@
-package com.planwise.app
+package com.craftycode.planwise
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.planwise.app.data.Plan
+import com.craftycode.planwise.data.Plan
 
 class PlanAdapter(
     private var plans: List<Plan>,

@@ -1,4 +1,4 @@
-package com.planwise.app
+package com.craftycode.planwise
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -8,8 +8,8 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.planwise.app.data.Plan
-import com.planwise.app.data.PlanDatabase
+import com.craftycode.planwise.data.Plan
+import com.craftycode.planwise.data.PlanDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
