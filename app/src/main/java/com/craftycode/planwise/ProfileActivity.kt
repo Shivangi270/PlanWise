@@ -160,7 +160,7 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun calculateStreak(plans: List<com.planwise.app.data.Plan>): Int {
+    private fun calculateStreak(plans: List<com.craftycode.planwise.data.Plan>): Int {
         if (plans.isEmpty()) return 0
         
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
