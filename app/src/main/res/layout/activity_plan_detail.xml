@@ -108,7 +108,7 @@
             android:textColor="@color/text_secondary"
             android:layout_marginBottom="16dp" />
 
-        <!-- Plan Content Card -->
+                <!-- Plan Content Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -116,22 +116,27 @@
             app:cardElevation="4dp"
             android:layout_marginBottom="16dp">
 
-            <LinearLayout
+            <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@color/surface_white"
-                android:padding="16dp">
+                android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/detail_plan_content"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Plan content will appear here..."
-                    android:textSize="14sp"
-                    android:textColor="@color/text_primary"
-                    android:lineSpacingExtra="6dp" />
-            </LinearLayout>
+                    android:orientation="vertical"
+                    android:background="@color/surface_white"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/detail_plan_content"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plan content will appear here..."
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:lineSpacingExtra="6dp" />
+                </LinearLayout>
+            </HorizontalScrollView>
         </androidx.cardview.widget.CardView>
 
         <!-- Complete Button -->

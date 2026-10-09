@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.craftycode.planwise.data.PlanDatabase
+import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import kotlinx.coroutines.Dispatchers
@@ -67,12 +68,15 @@ class PlanDetailActivity : AppCompatActivity() {
     }
 
     private fun markdownToHtml(markdown: String): String {
-        val parser = Parser.builder().build()
-        val renderer = HtmlRenderer.builder().build()
+        val extensions = listOf(TablesExtension.create())
+        val parser = Parser.builder()
+            .extensions(extensions)
+            .build()
+        val renderer = HtmlRenderer.builder()
+            .extensions(extensions)
+            .build()
         val document = parser.parse(markdown)
-        val html = renderer.render(document)
-        // Preserve line breaks in HTML
-        return html.replace("\n", "<br>")
+        return renderer.render(document)
     }
 
     private fun loadPlan(planId: Long) {
@@ -130,6 +134,6 @@ class PlanDetailActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        finish()
+        super.onBackPressed()
     }
 }

@@ -15,6 +15,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import org.json.JSONObject
@@ -45,7 +46,6 @@ class MainActivity : AppCompatActivity() {
     private var currentRole: String = ""
     private var currentTopics: String = ""
 
-    // SharedPreferences for daily limit
     private lateinit var sharedPrefs: SharedPreferences
     private val PREFS_NAME = "PlanWisePrefs"
     private val KEY_LAST_GEN_DATE = "last_gen_date"
@@ -57,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize SharedPreferences
         sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         goalInput = findViewById(R.id.goal_input)
@@ -82,24 +81,23 @@ class MainActivity : AppCompatActivity() {
         savePlanButton.setOnClickListener { savePlanToDatabase() }
 
         savePlanButton.visibility = android.view.View.GONE
-
-        // Check and update daily limit status
         updateLimitStatus()
     }
 
     override fun onBackPressed() {
-        // Just finish this activity and let the system handle the back stack
-        finish()
-        // Don't add any custom transition here - let the system handle it
+        super.onBackPressed()
     }
 
     private fun markdownToHtml(markdown: String): String {
-        val parser = Parser.builder().build()
-        val renderer = HtmlRenderer.builder().build()
+        val extensions = listOf(TablesExtension.create())
+        val parser = Parser.builder()
+            .extensions(extensions)
+            .build()
+        val renderer = HtmlRenderer.builder()
+            .extensions(extensions)
+            .build()
         val document = parser.parse(markdown)
-        val html = renderer.render(document)
-        // Preserve line breaks in HTML
-        return html.replace("\n", "<br>")
+        return renderer.render(document)
     }
 
     private fun canGeneratePlan(): Boolean {
