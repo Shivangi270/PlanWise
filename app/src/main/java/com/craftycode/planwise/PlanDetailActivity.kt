@@ -68,16 +68,30 @@ class PlanDetailActivity : AppCompatActivity() {
     }
 
     private fun markdownToHtml(markdown: String): String {
-        val extensions = listOf(TablesExtension.create())
-        val parser = Parser.builder()
-            .extensions(extensions)
-            .build()
-        val renderer = HtmlRenderer.builder()
-            .extensions(extensions)
-            .build()
-        val document = parser.parse(markdown)
-        return renderer.render(document)
-    }
+    val extensions = listOf(TablesExtension.create())
+    val parser = Parser.builder().extensions(extensions).build()
+    val renderer = HtmlRenderer.builder().extensions(extensions).build()
+    val html = renderer.render(parser.parse(markdown))
+    return wrapTablesForMobile(html)
+}
+
+private fun wrapTablesForMobile(html: String): String {
+    val styleTag = """
+        <style>
+            body { font-family: sans-serif; line-height: 1.5; }
+            table { border-collapse: collapse; width: 100%; font-size: 12px; margin: 8px 0; }
+            th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            th { background-color: #f0f0f0; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            p { margin: 4px 0; }
+            h1, h2, h3 { margin: 8px 0 4px 0; }
+            ul, ol { margin: 4px 0; padding-left: 20px; }
+            li { margin: 2px 0; }
+        </style>
+    """.trimIndent()
+    val wrapped = html.replace("<table>", "<div style='overflow-x:auto;'><table>").replace("</table>", "</table></div>")
+    return styleTag + wrapped
+}
 
     private fun loadPlan(planId: Long) {
         lifecycleScope.launch {

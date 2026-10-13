@@ -97,17 +97,52 @@ class MainActivity : AppCompatActivity() {
             .extensions(extensions)
             .build()
         val document = parser.parse(markdown)
-        return renderer.render(document)
+        val html = renderer.render(document)
+        // Wrap tables in a scrollable div with styling
+        return wrapTablesForMobile(html)
     }
+
+    private fun wrapTablesForMobile(html: String): String {
+        // Add responsive styles for tables
+        val styleTag = """
+            <style>
+                body { font-family: sans-serif; line-height: 1.5; }
+                table { border-collapse: collapse; width: 100%; font-size: 12px; margin: 8px 0; }
+                th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+                th { background-color: #f0f0f0; font-weight: bold; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                p { margin: 4px 0; }
+                h1, h2, h3 { margin: 8px 0 4px 0; }
+                ul, ol { margin: 4px 0; padding-left: 20px; }
+                li { margin: 2px 0; }
+            </style>
+        """.trimIndent()
+
+        // Wrap tables in a scrollable container
+        val wrapped = html.replace(
+            "<table>",
+            "<div style='overflow-x:auto;'><table>"
+        ).replace(
+            "</table>",
+            "</table></div>"
+        )
+
+        return styleTag + wrapped
+    }
+
+    private fun displayPlan(markdown: String) {
+        val html = markdownToHtml(markdown)
+        resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
+    }
+
+    // ... (keep canGeneratePlan, incrementGenerationCount, updateLimitStatus unchanged)
 
     private fun canGeneratePlan(): Boolean {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         val year = Calendar.getInstance().get(Calendar.YEAR)
         val todayKey = "$year-$today"
-
         val lastGenDate = sharedPrefs.getString(KEY_LAST_GEN_DATE, "")
         val genCount = sharedPrefs.getInt(KEY_GEN_COUNT, 0)
-
         if (lastGenDate != todayKey) {
             sharedPrefs.edit().apply {
                 putString(KEY_LAST_GEN_DATE, todayKey)
@@ -116,7 +151,6 @@ class MainActivity : AppCompatActivity() {
             }
             return true
         }
-
         return genCount < DAILY_LIMIT
     }
 
@@ -124,7 +158,6 @@ class MainActivity : AppCompatActivity() {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         val year = Calendar.getInstance().get(Calendar.YEAR)
         val todayKey = "$year-$today"
-
         val currentCount = sharedPrefs.getInt(KEY_GEN_COUNT, 0)
         sharedPrefs.edit().apply {
             putString(KEY_LAST_GEN_DATE, todayKey)
@@ -138,14 +171,8 @@ class MainActivity : AppCompatActivity() {
         val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
         val year = Calendar.getInstance().get(Calendar.YEAR)
         val todayKey = "$year-$today"
-
         val lastGenDate = sharedPrefs.getString(KEY_LAST_GEN_DATE, "")
-        val genCount = if (lastGenDate == todayKey) {
-            sharedPrefs.getInt(KEY_GEN_COUNT, 0)
-        } else {
-            0
-        }
-
+        val genCount = if (lastGenDate == todayKey) sharedPrefs.getInt(KEY_GEN_COUNT, 0) else 0
         val remaining = DAILY_LIMIT - genCount
         if (remaining > 0) {
             limitWarningText.text = "📊 $remaining of $DAILY_LIMIT plan generations remaining today"
@@ -192,12 +219,9 @@ class MainActivity : AppCompatActivity() {
                     callGeneratePlanAPI(currentGoal, currentDeadline, currentHours, currentRole, currentTopics)
                 }
                 currentPlanText = plan
-
                 incrementGenerationCount()
-
                 withContext(Dispatchers.Main) {
-                    val html = markdownToHtml(plan)
-                    resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
+                    displayPlan(plan)
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
                     reviewButton.visibility = android.view.View.VISIBLE
@@ -233,12 +257,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Please generate a valid plan first", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (currentGoal.isEmpty()) {
             Toast.makeText(this, "Please enter your goal first", Toast.LENGTH_SHORT).show()
             return
         }
-
         loadingText.text = "🤔 Reviewing your plan..."
         loadingText.visibility = android.view.View.VISIBLE
         reviewButton.isEnabled = false
@@ -249,8 +271,7 @@ class MainActivity : AppCompatActivity() {
                     callReviewPlanAPI(currentPlanText, currentGoal)
                 }
                 withContext(Dispatchers.Main) {
-                    val html = markdownToHtml("🔍 PLAN REVIEW\n\n$review")
-                    resultText.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
+                    displayPlan("🔍 PLAN REVIEW\n\n$review")
                     reviewButton.text = "🔄 Review Again"
                     reviewButton.isEnabled = true
                     loadingText.visibility = android.view.View.GONE
@@ -277,7 +298,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "No plan to save", Toast.LENGTH_SHORT).show()
             return
         }
-
         loadingText.text = "💾 Saving plan..."
         loadingText.visibility = android.view.View.VISIBLE
         savePlanButton.isEnabled = false
@@ -293,13 +313,9 @@ class MainActivity : AppCompatActivity() {
                     planText = currentPlanText,
                     createdAt = System.currentTimeMillis()
                 )
-
                 withContext(Dispatchers.IO) {
-                    PlanDatabase.getDatabase(this@MainActivity)
-                        .planDao()
-                        .insertPlan(plan)
+                    PlanDatabase.getDatabase(this@MainActivity).planDao().insertPlan(plan)
                 }
-
                 withContext(Dispatchers.Main) {
                     loadingText.visibility = android.view.View.GONE
                     savePlanButton.isEnabled = true
@@ -316,13 +332,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun callGeneratePlanAPI(
-        goal: String,
-        deadline: Int,
-        dailyHours: Int,
-        role: String,
-        topics: String
-    ): String = withContext(Dispatchers.IO) {
+    private suspend fun callGeneratePlanAPI(goal: String, deadline: Int, dailyHours: Int, role: String, topics: String): String = withContext(Dispatchers.IO) {
         val url = URL("$BACKEND_URL/generate-plan")
         val connection = url.openConnection() as HttpURLConnection
         try {
@@ -331,7 +341,6 @@ class MainActivity : AppCompatActivity() {
             connection.doOutput = true
             connection.connectTimeout = 15000
             connection.readTimeout = 30000
-
             val jsonBody = JSONObject().apply {
                 put("goal", goal)
                 put("deadline", deadline)
@@ -339,21 +348,15 @@ class MainActivity : AppCompatActivity() {
                 put("role", role)
                 put("topics", topics)
             }
-
-            connection.outputStream.use { os ->
-                os.write(jsonBody.toString().toByteArray())
-            }
-
+            connection.outputStream.use { os -> os.write(jsonBody.toString().toByteArray()) }
             val responseCode = connection.responseCode
             val response = if (responseCode in 200..299) {
                 connection.inputStream.bufferedReader().use { it.readText() }
             } else {
                 connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
             }
-
             if (responseCode in 200..299) {
-                val jsonResponse = JSONObject(response)
-                jsonResponse.getString("plan")
+                JSONObject(response).getString("plan")
             } else {
                 throw Exception("Server error $responseCode")
             }
@@ -371,26 +374,19 @@ class MainActivity : AppCompatActivity() {
             connection.doOutput = true
             connection.connectTimeout = 15000
             connection.readTimeout = 30000
-
             val jsonBody = JSONObject().apply {
                 put("plan", plan)
                 put("goal", goal)
             }
-
-            connection.outputStream.use { os ->
-                os.write(jsonBody.toString().toByteArray())
-            }
-
+            connection.outputStream.use { os -> os.write(jsonBody.toString().toByteArray()) }
             val responseCode = connection.responseCode
             val response = if (responseCode in 200..299) {
                 connection.inputStream.bufferedReader().use { it.readText() }
             } else {
                 connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
             }
-
             if (responseCode in 200..299) {
-                val jsonResponse = JSONObject(response)
-                jsonResponse.getString("review")
+                JSONObject(response).getString("review")
             } else {
                 throw Exception("Server error $responseCode")
             }
