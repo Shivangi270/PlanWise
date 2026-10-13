@@ -36,4 +36,6 @@ ehthumbs.db
 Thumbs.db
 
 # Android Profiling
-*.hprof
+*.hprofkeystore-base64.txt
+*.jks
+planwise-upload-key.jks
