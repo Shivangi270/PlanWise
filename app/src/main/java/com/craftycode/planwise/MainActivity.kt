@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    private fun markdownToHtml(markdown: String): String {
+        private fun markdownToHtml(markdown: String): String {
         val extensions = listOf(TablesExtension.create())
         val parser = Parser.builder()
             .extensions(extensions)
@@ -98,36 +98,26 @@ class MainActivity : AppCompatActivity() {
             .build()
         val document = parser.parse(markdown)
         val html = renderer.render(document)
-        // Wrap tables in a scrollable div with styling
         return wrapTablesForMobile(html)
     }
 
     private fun wrapTablesForMobile(html: String): String {
-        // Add responsive styles for tables
-        val styleTag = """
-            <style>
-                body { font-family: sans-serif; line-height: 1.5; }
-                table { border-collapse: collapse; width: 100%; font-size: 12px; margin: 8px 0; }
-                th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
-                th { background-color: #f0f0f0; font-weight: bold; }
-                tr:nth-child(even) { background-color: #f9f9f9; }
-                p { margin: 4px 0; }
-                h1, h2, h3 { margin: 8px 0 4px 0; }
-                ul, ol { margin: 4px 0; padding-left: 20px; }
-                li { margin: 2px 0; }
-            </style>
-        """.trimIndent()
-
-        // Wrap tables in a scrollable container
-        val wrapped = html.replace(
-            "<table>",
-            "<div style='overflow-x:auto;'><table>"
-        ).replace(
-            "</table>",
-            "</table></div>"
-        )
-
-        return styleTag + wrapped
+        // Add inline styles that Android's Html.fromHtml() actually supports
+        // Android respects: text-align, font-weight, text-decoration, background-color (partial)
+        // Android ignores: margin, padding, line-height, font-family
+        
+        // Wrap tables in a horizontally scrollable div
+        val wrapped = html
+            .replace(
+                "<table>",
+                "<div style='overflow-x:auto;'><table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; font-size:12px;'>"
+            )
+            .replace(
+                "</table>",
+                "</table></div>"
+            )
+        
+        return wrapped
     }
 
     private fun displayPlan(markdown: String) {
