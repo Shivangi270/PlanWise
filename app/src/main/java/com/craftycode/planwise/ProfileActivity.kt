@@ -318,7 +318,4 @@ class ProfileActivity : AppCompatActivity() {
             .show()
     }
 
-    override fun onBackPressed() {
-        finish()
-    }
 }

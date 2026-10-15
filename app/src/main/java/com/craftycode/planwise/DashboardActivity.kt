@@ -81,14 +81,6 @@ class DashboardActivity : AppCompatActivity() {
         loadDashboardData()
     }
 
-    override fun onBackPressed() {
-        // If this is the root activity, just move to background
-        if (isTaskRoot) {
-            moveTaskToBack(true)
-        } else {
-            super.onBackPressed()
-        }
-    }
 
     private fun loadDashboardData() {
         lifecycleScope.launch {

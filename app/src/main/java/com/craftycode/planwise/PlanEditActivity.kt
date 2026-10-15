@@ -243,7 +243,4 @@ class PlanEditActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        finish()
-    }
 }

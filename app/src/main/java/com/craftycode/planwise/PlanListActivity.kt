@@ -110,7 +110,4 @@ class PlanListActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        finish()
-    }
 }
