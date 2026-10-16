@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
@@ -88,7 +87,8 @@ class MainActivity : AppCompatActivity() {
         updateLimitStatus()
     }
 
-    // Note: onBackPressed is NOT overridden — Android's default back behavior is used.
+    // NOTE: onBackPressed() is intentionally NOT overridden.
+    // Android's default back navigation is used to prevent crashes.
 
     private fun markdownToHtml(markdown: String): String {
         val extensions = listOf(TablesExtension.create())
@@ -191,9 +191,20 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
+                var firstChunkReceived = false
+
                 streamGeneratePlanAPI(
-                    currentGoal, currentDeadline, currentHours, currentRole, currentTopics
+                    currentGoal, currentDeadline, currentHours, currentRole, currentTopics,
+                    onFirstChunk = {
+                        if (!firstChunkReceived) {
+                            firstChunkReceived = true
+                            runOnUiThread {
+                                loadingText.visibility = android.view.View.GONE
+                            }
+                        }
+                    }
                 )
+
                 withContext(Dispatchers.Main) {
                     loadingText.visibility = android.view.View.GONE
                     generateButton.isEnabled = true
@@ -226,11 +237,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun reviewPlan() {
-        if (currentPlanText.isEmpty() || currentPlanText.contains("Error") || currentPlanText.contains("timeout")) {
+        private fun reviewPlan() {
+        // Prevent review while plan is still generating
+        if (loadingText.visibility == android.view.View.VISIBLE) {
+            Toast.makeText(this, "Please wait for the plan to finish generating", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Use currentPlanText if available, otherwise fall back to what's displayed
+        val planText = if (currentPlanText.isNotEmpty()) {
+            currentPlanText
+        } else {
+            resultText.text.toString()
+        }
+
+        if (planText.isEmpty() ||
+            planText.contains("Click 'Generate Plan'") ||
+            planText.contains("Error") ||
+            planText.contains("timeout") ||
+            planText.contains("Generating your plan") ||
+            planText.contains("⚠️ The plan may be incomplete")
+        ) {
             Toast.makeText(this, "Please generate a valid plan first", Toast.LENGTH_SHORT).show()
             return
         }
+
         if (currentGoal.isEmpty()) {
             Toast.makeText(this, "Please enter your goal first", Toast.LENGTH_SHORT).show()
             return
@@ -243,7 +274,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                streamReviewPlanAPI(currentPlanText, currentGoal)
+                streamReviewPlanAPI(planText, currentGoal)
                 withContext(Dispatchers.Main) {
                     reviewButton.text = "🔄 Review Again"
                     reviewButton.isEnabled = true
@@ -267,10 +298,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun savePlanToDatabase() {
-        if (currentPlanText.isEmpty()) {
+        val planText = if (currentPlanText.isNotEmpty()) currentPlanText else resultText.text.toString()
+
+        if (planText.isEmpty()) {
             Toast.makeText(this, "No plan to save", Toast.LENGTH_SHORT).show()
             return
         }
+
         loadingText.text = "💾 Saving plan..."
         loadingText.visibility = android.view.View.VISIBLE
         savePlanButton.isEnabled = false
@@ -283,7 +317,7 @@ class MainActivity : AppCompatActivity() {
                     dailyHours = currentHours,
                     role = currentRole,
                     topics = currentTopics,
-                    planText = currentPlanText,
+                    planText = planText,
                     createdAt = System.currentTimeMillis()
                 )
                 withContext(Dispatchers.IO) {
@@ -310,16 +344,18 @@ class MainActivity : AppCompatActivity() {
         deadline: Int,
         dailyHours: Int,
         role: String,
-        topics: String
+        topics: String,
+        onFirstChunk: () -> Unit
     ) = withContext(Dispatchers.IO) {
         val url = URL("$BACKEND_URL/generate-plan")
         val connection = url.openConnection() as HttpURLConnection
         try {
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Accept", "text/plain")
             connection.doOutput = true
             connection.connectTimeout = 15000
-            connection.readTimeout = 90000
+            connection.readTimeout = 180000  // 3 minutes
 
             val jsonBody = JSONObject().apply {
                 put("goal", goal)
@@ -343,9 +379,14 @@ class MainActivity : AppCompatActivity() {
             val mainHandler = Handler(Looper.getMainLooper())
             val buffer = StringBuilder()
             var lastUpdate = 0L
+            var isFirstLine = true
 
             var line: String?
             while (reader.readLine().also { line = it } != null) {
+                if (isFirstLine) {
+                    isFirstLine = false
+                    mainHandler.post { onFirstChunk() }
+                }
                 buffer.append(line).append("\n")
                 val now = System.currentTimeMillis()
                 if (now - lastUpdate > 150) {
@@ -356,7 +397,7 @@ class MainActivity : AppCompatActivity() {
             }
             reader.close()
 
-            currentPlanText = buffer.toString()
+            currentPlanText = buffer.toString().trim()
             mainHandler.post { displayPlan(currentPlanText) }
         } finally {
             connection.disconnect()
@@ -369,9 +410,10 @@ class MainActivity : AppCompatActivity() {
         try {
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Accept", "text/plain")
             connection.doOutput = true
             connection.connectTimeout = 15000
-            connection.readTimeout = 90000
+            connection.readTimeout = 180000
 
             val jsonBody = JSONObject().apply {
                 put("plan", plan)
