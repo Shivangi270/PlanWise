@@ -2,7 +2,6 @@ package com.craftycode.planwise
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -25,6 +24,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var streakCount: TextView
     private lateinit var recentPlansContainer: LinearLayout
     private lateinit var profileIcon: ImageView
+    private lateinit var viewAllPlansButton: TextView // Added for View All button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -40,8 +40,9 @@ class DashboardActivity : AppCompatActivity() {
         streakCount = findViewById(R.id.streak_count)
         recentPlansContainer = findViewById(R.id.recent_plans_container)
         profileIcon = findViewById(R.id.profile_icon)
+        viewAllPlansButton = findViewById(R.id.view_all_plans_button) // Initialize View All
 
-        // Set welcome message
+        // Set welcome message with time-based greeting
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val greeting = when (hour) {
             in 0..11 -> "Good Morning! 👋"
@@ -51,24 +52,28 @@ class DashboardActivity : AppCompatActivity() {
         }
         welcomeText.text = greeting
 
-        // Set click listeners with FLAG_ACTIVITY_CLEAR_TOP to prevent duplicate activities
+        // Set click listeners
         createPlanButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         viewPlansCard.setOnClickListener {
             val intent = Intent(this, PlanListActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         profileIcon.setOnClickListener {
             val intent = Intent(this, ProfileActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+
+        // Set click listener for View All button
+        viewAllPlansButton.setOnClickListener {
+            val intent = Intent(this, PlanListActivity::class.java)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
@@ -81,17 +86,24 @@ class DashboardActivity : AppCompatActivity() {
         loadDashboardData()
     }
 
+    // Note: onBackPressed is NOT overridden — Android's default back behavior is used.
 
     private fun loadDashboardData() {
         lifecycleScope.launch {
             val dao = PlanDatabase.getDatabase(this@DashboardActivity).planDao()
             
             dao.getAllPlans().collect { planList ->
+                // Update Plans Created
                 plansCount.text = planList.size.toString()
+
+                // Update Goals Achieved
                 val completed = planList.filter { it.isCompleted }.size
                 goalsCount.text = completed.toString()
+
+                // Update Day Streak
                 streakCount.text = calculateStreak(planList).toString()
 
+                // Update Recent Plans
                 recentPlansContainer.removeAllViews()
                 
                 if (planList.isEmpty()) {
@@ -111,7 +123,6 @@ class DashboardActivity : AppCompatActivity() {
                         
                         planView.setOnClickListener {
                             val intent = Intent(this@DashboardActivity, PlanDetailActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                             intent.putExtra("plan_id", plan.id)
                             startActivity(intent)
                             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
