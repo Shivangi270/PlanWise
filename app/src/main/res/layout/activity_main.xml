@@ -83,6 +83,7 @@
 
         <!-- Goal Input -->
         <TextView
+            android:id="@+id/goal_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="🎯 What's your goal?"
@@ -155,6 +156,7 @@
 
         <!-- Topics Input -->
         <TextView
+            android:id="@+id/topics_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="📚 What topics do you want to cover?"
@@ -212,7 +214,7 @@
             android:layout_marginBottom="12dp"
             android:layout_gravity="center" />
 
-                <!-- Result Card -->
+        <!-- Result Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

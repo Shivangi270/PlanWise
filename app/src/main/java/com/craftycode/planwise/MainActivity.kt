@@ -41,6 +41,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var savePlanButton: Button
     private lateinit var limitWarningText: TextView
 
+    // New label variables for dynamic text
+    private lateinit var goalLabel: TextView
+    private lateinit var topicsLabel: TextView
+
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
     private var currentPlanText: String = ""
     private var currentGoal: String = ""
@@ -73,11 +77,30 @@ class MainActivity : AppCompatActivity() {
         loadingText = findViewById(R.id.loading_text)
         savePlanButton = findViewById(R.id.save_plan_button)
         limitWarningText = findViewById(R.id.limit_warning_text)
+        
+        goalLabel = findViewById(R.id.goal_label)
+        topicsLabel = findViewById(R.id.topics_label)
 
         val roles = arrayOf("Student", "Professional")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
         roleInput.setAdapter(adapter)
         roleInput.setText("Student", false)
+
+        // Dynamic label changes based on role
+        roleInput.setOnItemClickListener { parent, view, position, id ->
+            val selectedRole = parent.getItemAtPosition(position).toString()
+            if (selectedRole == "Student") {
+                goalLabel.text = "🎯 What's your goal?"
+                goalInput.hint = "e.g., Crack JEE Mains, Finish Physics syllabus"
+                topicsLabel.text = "📚 What topics do you want to cover?"
+                topicsInput.hint = "e.g., Mechanics, Organic Chemistry, Calculus"
+            } else {
+                goalLabel.text = "🎯 What's your main objective?"
+                goalInput.hint = "e.g., Launch new marketing campaign, Finish app MVP"
+                topicsLabel.text = "📋 What are your key tasks?"
+                topicsInput.hint = "e.g., Design, Development, Client meetings"
+            }
+        }
 
         generateButton.setOnClickListener { generatePlan() }
         reviewButton.setOnClickListener { reviewPlan() }
@@ -87,8 +110,7 @@ class MainActivity : AppCompatActivity() {
         updateLimitStatus()
     }
 
-    // NOTE: onBackPressed() is intentionally NOT overridden.
-    // Android's default back navigation is used to prevent crashes.
+    // Note: onBackPressed is NOT overridden — Android's default back behavior is used.
 
     private fun markdownToHtml(markdown: String): String {
         val extensions = listOf(TablesExtension.create())
@@ -237,14 +259,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-        private fun reviewPlan() {
-        // Prevent review while plan is still generating
+    private fun reviewPlan() {
         if (loadingText.visibility == android.view.View.VISIBLE) {
             Toast.makeText(this, "Please wait for the plan to finish generating", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Use currentPlanText if available, otherwise fall back to what's displayed
         val planText = if (currentPlanText.isNotEmpty()) {
             currentPlanText
         } else {
@@ -355,7 +375,7 @@ class MainActivity : AppCompatActivity() {
             connection.setRequestProperty("Accept", "text/plain")
             connection.doOutput = true
             connection.connectTimeout = 15000
-            connection.readTimeout = 180000  // 3 minutes
+            connection.readTimeout = 180000
 
             val jsonBody = JSONObject().apply {
                 put("goal", goal)
