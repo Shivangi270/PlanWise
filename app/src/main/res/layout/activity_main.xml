@@ -168,7 +168,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -177,6 +177,31 @@
                 android:layout_height="wrap_content"
                 android:hint="e.g., Physics, Chemistry, Mathematics"
                 android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Plan Type Selector (NEW) -->
+        <TextView
+            android:id="@+id/plan_type_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📖 What type of study do you need?"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/plan_type_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Select plan type"
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Generate Button -->

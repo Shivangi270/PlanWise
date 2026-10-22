@@ -41,9 +41,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var savePlanButton: Button
     private lateinit var limitWarningText: TextView
 
-    // New label variables for dynamic text
+    // Dynamic labels and new plan type spinner
     private lateinit var goalLabel: TextView
     private lateinit var topicsLabel: TextView
+    private lateinit var planTypeLabel: TextView
+    private lateinit var planTypeInput: AutoCompleteTextView
 
     private val BACKEND_URL = "https://planwise-backend-vcg7.onrender.com"
     private var currentPlanText: String = ""
@@ -52,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     private var currentHours: Int = 0
     private var currentRole: String = ""
     private var currentTopics: String = ""
+    private var currentPlanType: String = ""
 
     private lateinit var sharedPrefs: SharedPreferences
     private val PREFS_NAME = "PlanWisePrefs"
@@ -80,26 +83,20 @@ class MainActivity : AppCompatActivity() {
         
         goalLabel = findViewById(R.id.goal_label)
         topicsLabel = findViewById(R.id.topics_label)
+        planTypeLabel = findViewById(R.id.plan_type_label)
+        planTypeInput = findViewById(R.id.plan_type_spinner)
 
         val roles = arrayOf("Student", "Professional")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
-        roleInput.setAdapter(adapter)
+        val roleAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
+        roleInput.setAdapter(roleAdapter)
         roleInput.setText("Student", false)
 
-        // Dynamic label changes based on role
+        // Initialize the form for the default role (Student)
+        updateFormForRole("Student")
+
+        // Change form fields when role changes
         roleInput.setOnItemClickListener { parent, view, position, id ->
-            val selectedRole = parent.getItemAtPosition(position).toString()
-            if (selectedRole == "Student") {
-                goalLabel.text = "🎯 What's your goal?"
-                goalInput.hint = "e.g., Crack JEE Mains, Finish Physics syllabus"
-                topicsLabel.text = "📚 What topics do you want to cover?"
-                topicsInput.hint = "e.g., Mechanics, Organic Chemistry, Calculus"
-            } else {
-                goalLabel.text = "🎯 What's your main objective?"
-                goalInput.hint = "e.g., Launch new marketing campaign, Finish app MVP"
-                topicsLabel.text = "📋 What are your key tasks?"
-                topicsInput.hint = "e.g., Design, Development, Client meetings"
-            }
+            updateFormForRole(parent.getItemAtPosition(position).toString())
         }
 
         generateButton.setOnClickListener { generatePlan() }
@@ -108,6 +105,33 @@ class MainActivity : AppCompatActivity() {
 
         savePlanButton.visibility = android.view.View.GONE
         updateLimitStatus()
+    }
+
+    private fun updateFormForRole(selectedRole: String) {
+        if (selectedRole == "Student") {
+            goalLabel.text = "🎯 What's your goal?"
+            goalInput.hint = "e.g., Crack JEE Mains, Finish Physics syllabus"
+            topicsLabel.text = "📚 What topics do you want to cover?"
+            topicsInput.hint = "e.g., Mechanics, Organic Chemistry"
+            
+            planTypeLabel.text = "📖 What type of study do you need?"
+            val studentTypes = arrayOf("Read & Practice (Both)", "Only Reading (Theory)", "Only Practice (Questions)")
+            val typeAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, studentTypes)
+            planTypeInput.setAdapter(typeAdapter)
+            planTypeInput.setText("Read & Practice (Both)", false)
+            
+        } else {
+            goalLabel.text = "🎯 What's your main objective?"
+            goalInput.hint = "e.g., Launch campaign, Finish MVP"
+            topicsLabel.text = "📋 What are your key tasks?"
+            topicsInput.hint = "e.g., Code login, Client meeting"
+            
+            planTypeLabel.text = "🛠️ What type of work session?"
+            val proTypes = arrayOf("Mix of Deep Work & Admin", "Deep Work Only (No meetings)", "Admin/Light Tasks Only")
+            val typeAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, proTypes)
+            planTypeInput.setAdapter(typeAdapter)
+            planTypeInput.setText("Mix of Deep Work & Admin", false)
+        }
     }
 
     // Note: onBackPressed is NOT overridden — Android's default back behavior is used.
@@ -194,6 +218,7 @@ class MainActivity : AppCompatActivity() {
         val hoursStr = hoursInput.text.toString().trim()
         currentTopics = topicsInput.text.toString().trim()
         currentRole = roleInput.text.toString().lowercase()
+        currentPlanType = planTypeInput.text.toString()
 
         if (currentGoal.isEmpty() || deadlineStr.isEmpty() || hoursStr.isEmpty()) {
             Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show()
@@ -216,7 +241,7 @@ class MainActivity : AppCompatActivity() {
                 var firstChunkReceived = false
 
                 streamGeneratePlanAPI(
-                    currentGoal, currentDeadline, currentHours, currentRole, currentTopics,
+                    currentGoal, currentDeadline, currentHours, currentRole, currentTopics, currentPlanType,
                     onFirstChunk = {
                         if (!firstChunkReceived) {
                             firstChunkReceived = true
@@ -365,6 +390,7 @@ class MainActivity : AppCompatActivity() {
         dailyHours: Int,
         role: String,
         topics: String,
+        planType: String,
         onFirstChunk: () -> Unit
     ) = withContext(Dispatchers.IO) {
         val url = URL("$BACKEND_URL/generate-plan")
@@ -383,6 +409,7 @@ class MainActivity : AppCompatActivity() {
                 put("daily_hours", dailyHours)
                 put("role", role)
                 put("topics", topics)
+                put("plan_type", planType) // Added new field
             }
 
             connection.outputStream.use { os ->
