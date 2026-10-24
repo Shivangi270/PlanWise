@@ -107,12 +107,17 @@ class MainActivity : AppCompatActivity() {
         updateLimitStatus()
     }
 
-    private fun updateFormForRole(selectedRole: String) {
+        private fun updateFormForRole(selectedRole: String) {
+        // Find the parent TextInputLayouts
+        val goalLayout = goalInput.parent.parent as com.google.android.material.textfield.TextInputLayout
+        val topicsLayout = topicsInput.parent.parent as com.google.android.material.textfield.TextInputLayout
+
         if (selectedRole == "Student") {
             goalLabel.text = "🎯 What's your goal?"
-            goalInput.hint = "e.g., Crack JEE Mains, Finish Physics syllabus"
+            goalLayout.hint = "e.g., Crack JEE Mains, Finish Physics syllabus"
+            
             topicsLabel.text = "📚 What topics do you want to cover?"
-            topicsInput.hint = "e.g., Mechanics, Organic Chemistry"
+            topicsLayout.hint = "e.g., Mechanics, Organic Chemistry"
             
             planTypeLabel.text = "📖 What type of study do you need?"
             val studentTypes = arrayOf("Read & Practice (Both)", "Only Reading (Theory)", "Only Practice (Questions)")
@@ -122,9 +127,10 @@ class MainActivity : AppCompatActivity() {
             
         } else {
             goalLabel.text = "🎯 What's your main objective?"
-            goalInput.hint = "e.g., Launch campaign, Finish MVP"
+            goalLayout.hint = "e.g., Launch campaign, Finish MVP"
+            
             topicsLabel.text = "📋 What are your key tasks?"
-            topicsInput.hint = "e.g., Code login, Client meeting"
+            topicsLayout.hint = "e.g., Code login, Client meeting"
             
             planTypeLabel.text = "🛠️ What type of work session?"
             val proTypes = arrayOf("Mix of Deep Work & Admin", "Deep Work Only (No meetings)", "Admin/Light Tasks Only")
